@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Trails</string>
+    <string name="title_fav">Favorites</string>
+    <string name="title_explore">Explore</string>
+    <string name="title_search">Search</string>
+    <string name="not_availible">N/A</string>
+    <string name="map_year_placeholder">Year</string>
+    <string name="map_area_name_placeholder">Area Name</string>
+    <string name="map_image_content_description">Map Image</string>
+</resources>

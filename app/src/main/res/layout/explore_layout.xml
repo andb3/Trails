@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/switchRegionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:elevation="4dp"
+        android:text="Switch Region"
+        app:backgroundTint="@color/colorAccent"
+        app:backgroundTintMode="src_atop"
+        app:icon="@drawable/ic_location_black_24dp"
+        app:iconTint="@android:color/white"
+        app:iconTintMode="src_atop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/exploreRegionRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switchRegionButton" >
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <FrameLayout
+        android:id="@+id/exploreAreaReplacement"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="16dp"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="64dp">
+
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
