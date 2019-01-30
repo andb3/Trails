@@ -16,6 +16,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    val favoritesFragment = FavoritesFragment()
+    val exploreFragment = ExploreFragment()
+    val searchFragment = SearchFragment()
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
@@ -25,11 +28,11 @@ class MainActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment? {
             return when (position) {
-                0 -> FavoritesFragment()
+                0 -> favoritesFragment
 
-                1 -> ExploreFragment()
+                1 -> exploreFragment
 
-                2 -> SearchFragment()
+                2 -> searchFragment
 
                 else -> null
             }
@@ -75,6 +78,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return false
+    }
+
+    override fun onBackPressed() {
+        if(RegionList.backStack.size>0 && pager.currentItem == 1){
+            RegionList.drop()
+            exploreFragment.exploreAdapter.notifyDataSetChanged()
+        }else {
+            super.onBackPressed()
+        }
+
     }
 
 

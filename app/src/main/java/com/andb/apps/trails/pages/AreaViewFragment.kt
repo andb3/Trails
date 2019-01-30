@@ -1,7 +1,6 @@
 package com.andb.apps.trails.pages
 
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,11 +16,14 @@ import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.area_view.*
 import kotlinx.android.synthetic.main.map_list_item.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.android.Main
 import java.net.URL
 
 class AreaViewFragment : Fragment() {
 
-    var skiArea = SkiArea(0, "", 0, 0, 1970, URL("https://www.example.com"), ArrayList(), ArrayList())
+    var skiArea =
+        SkiArea(0, "", 0, 0, 1970, URL("https://www.example.com"), ArrayList(), ArrayList())
     lateinit var mapAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
     var areaKey = -1
 
@@ -30,7 +32,11 @@ class AreaViewFragment : Fragment() {
         areaKey = arguments!!.getInt("areaKey")
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.area_view, container, false)
     }
 
@@ -44,14 +50,13 @@ class AreaViewFragment : Fragment() {
         loadArea(areaKey)
     }
 
-    fun loadArea(id: Int){
-        val handler = Handler()
-        Thread(Runnable {
+    fun loadArea(id: Int) {
+        CoroutineScope(Dispatchers.IO).launch {
             val recieved = AreaXMLParser.parse(id)
-            if(recieved!=null){
+            withContext(Dispatchers.Main) {
+
                 skiArea = recieved
-            }
-            handler.post {
+
                 skiArea.apply {
                     activity!!.toolbar.title = name
                     areaLiftCount.text = "Lifts: $liftCount"
@@ -61,7 +66,7 @@ class AreaViewFragment : Fragment() {
                 }
                 mapAdapter.notifyDataSetChanged()
             }
-        }).start()
+        }
     }
 
     fun mapAdapter() = Klaster.get()
