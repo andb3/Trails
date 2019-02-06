@@ -3,8 +3,31 @@
     <string name="title_fav">Favorites</string>
     <string name="title_explore">Explore</string>
     <string name="title_search">Search</string>
-    <string name="not_availible">N/A</string>
+    <string name="not_available">N/A</string>
     <string name="map_year_placeholder">Year</string>
     <string name="map_area_name_placeholder">Area Name</string>
     <string name="map_image_content_description">Map Image</string>
+    <string name="area_lift_count_text">Lifts: %1$d</string>
+    <string name="area_run_count_text">Runs: %1$d</string>
+    <string name="area_opening_year_text">Opening Year: %1$d</string>
+    <string name="area_website_text">Website: %1$s</string>
+    <string name="menu_region_americas">Americas</string>
+    <string name="menu_region_europe">Europe</string>
+    <string name="menu_region_asia">Asia</string>
+    <string name="menu_region_oceania">Oceania</string>
+    <string name="switch_region_text">Switch Region</string>
+    <string name="favorites_maps_divider_text">MAPS</string>
+    <string name="favorites_area_divider_text">AREAS</string>
+    <string name="favorites_remove_alert_title">Remove Favorite?</string>
+    <string name="favorites_remove_alert_positive">OK</string>
+    <string name="favorites_remove_alert_negative">Cancel</string>
+    <string name="favorite_area_current_map">Current Map</string>
+    <string name="ski_region_placeholder">Ski Region</string>
+    <string name="explore_item_region_maps">Maps: %1$d</string>
+    <string name="download_progress_title">Initial Download</string>
+    <string name="download_progress_desc">Downloading regions and areas</string>
+    <string name="download_progress_failed">Download Failed</string>
+    <string name="download_progress_try_again">Try Again</string>
+
+
 </resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/region_americas"
+        android:title="@string/menu_region_americas" />
+    <item
+        android:id="@+id/region_europe"
+        android:title="@string/menu_region_europe" />
+    <item
+        android:id="@+id/region_asia"
+        android:title="@string/menu_region_asia" />
+    <item
+        android:id="@+id/region_oceania"
+        android:title="@string/menu_region_oceania" />
+</menu>

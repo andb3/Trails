@@ -2,6 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/custom_area"
-        android:title="Pick Custom Area" />
+        android:id="@+id/test_menu_item"
+        android:title="Test" />
 </menu>

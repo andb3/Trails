@@ -6,7 +6,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/background_dark"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
+
+    <ProgressBar
+        android:id="@+id/mapLoadingIndicator"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="parent" />
+
+    <com.github.barteksc.pdfviewer.PDFView
+        android:id="@+id/mapPdfView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <com.ortiz.touchview.TouchImageView
         android:id="@+id/skiMapImage"
@@ -22,8 +41,9 @@
         app:tint="@android:color/white" />
 
     <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="88dp"
         android:background="@color/colorMapOverlay"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="@+id/skiMapAreaName">

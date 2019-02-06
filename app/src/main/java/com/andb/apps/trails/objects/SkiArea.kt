@@ -1,14 +1,14 @@
 package com.andb.apps.trails.objects
 
-import java.net.URL
+class SkiArea(id: Int,
+              name: String,
+              liftCount: Int,
+              runCount: Int,
+              openingYear: Int,
+              website: String,
+              val maps: ArrayList<SkiMap>
+) : BaseSkiArea(id, name, liftCount, runCount, openingYear, website) {
 
-class SkiArea(val id: Int,
-              val name: String,
-              val liftCount: Int,
-              val runCount: Int,
-              val openingYear: Int,
-              val website: URL,
-              val regions: ArrayList<BaseSkiRegion>,
-              val maps: ArrayList<Map>
-              ) {
+    constructor(baseArea: BaseSkiArea,
+                maps: ArrayList<SkiMap>) : this(baseArea.id, baseArea.name, baseArea.liftCount, baseArea.runCount, baseArea.openingYear, baseArea.website, maps)
 }
