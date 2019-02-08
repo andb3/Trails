@@ -8,8 +8,6 @@ import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.objects.BaseSkiMap
 import com.andb.apps.trails.objects.MapArtist
 import com.andb.apps.trails.objects.SkiMap
-import com.nostra13.universalimageloader.core.DisplayImageOptions
-import com.nostra13.universalimageloader.core.ImageLoader
 import kotlinx.coroutines.*
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
@@ -31,8 +29,6 @@ object MapXMLParser {
 
         if (isPdf(imageUrl)) {
             preloadPDF(imageUrl)
-        } else {
-            preloadImage(imageUrl, save)
         }
 
         val map = SkiMap(baseMap, imageUrl)
@@ -40,15 +36,17 @@ object MapXMLParser {
         return map
     }
 
-    fun parseThumbnail(mapId: Int, size: Int = 100): SkiMap?{
+    fun parseThumbnail(mapId: Int, size: Int = 300): SkiMap?{
         val parent = getNode(mapId) ?: return null
+
+        val startTime = System.currentTimeMillis()
         val baseMap = parseBase(parent) ?: return null
 
         val imageUrl = parseThumbnails(parent, size)
-        preloadThumbnail(imageUrl)
 
         val map = SkiMap(baseMap, imageUrl)
-        Log.d("map xml parsing success", map.toString())
+        Log.d("map xml parsing success", map.toString() + "time: ${(System.currentTimeMillis() - startTime)} ms")
+
         return map
     }
 
@@ -122,28 +120,12 @@ object MapXMLParser {
         return imageUrl
     }
 
-    private fun preloadThumbnail(url: String){
-        val options = DisplayImageOptions.Builder()
-            .cacheInMemory(true)
-            .cacheOnDisk(false)
-            .build()
-
-        ImageLoader.getInstance().loadImage(url, options, null)
-    }
 
     private fun parseImage(element: Element): String{
         val imageTag: Element = element.getElementsByTagName("unprocessed").item(0) as Element
         return imageTag.getAttribute("url")
     }
 
-    private fun preloadImage(url: String, save: Boolean){
-        val options = DisplayImageOptions.Builder()
-            .cacheInMemory(true)
-            .cacheOnDisk(save)
-            .build()
-
-        ImageLoader.getInstance().loadImage(url, options, null)
-    }
 
     private fun preloadPDF(url: String){
         val filename = filenameFromURL(url)

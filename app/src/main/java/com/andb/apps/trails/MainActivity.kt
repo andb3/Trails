@@ -44,15 +44,13 @@ class MainActivity : AppCompatActivity() {
     inner class SectionsPagerAdapter internal constructor(fm: FragmentManager) :
         FragmentPagerAdapter(fm) {
 
-        override fun getItem(position: Int): Fragment? {
+        override fun getItem(position: Int): Fragment {
             return when (position) {
                 0 -> favoritesFragment
 
                 1 -> exploreFragment
 
-                2 -> searchFragment
-
-                else -> null
+                else -> searchFragment
             }
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
@@ -149,10 +147,6 @@ class MainActivity : AppCompatActivity() {
         } else if (RegionList.backStack.size > 1 && pager.currentItem == 1) {
             RegionList.drop()
             exploreFragment.exploreAdapter.notifyDataSetChanged()
-            exploreHeaderRegionName.text = RegionList.currentRegion().name
-            if (RegionList.backStack.size == 1) {
-                switchRegionButton.visibility = View.VISIBLE
-            }
         } else {
             super.onBackPressed()
         }

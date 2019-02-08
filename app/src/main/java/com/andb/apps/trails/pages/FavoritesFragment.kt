@@ -7,19 +7,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.andb.apps.trails.AreaViewFragment
+import com.andb.apps.trails.GlideApp
 import com.andb.apps.trails.MapViewFragment
 import com.andb.apps.trails.R
 import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.utils.Utils
 import com.andb.apps.trails.xml.AreaXMLParser
+import com.bumptech.glide.Glide
 import com.github.rongi.klaster.Klaster
-import com.nostra13.universalimageloader.core.ImageLoader
 import kotlinx.android.synthetic.main.favorites_area_item.*
 import kotlinx.android.synthetic.main.favorites_divider.*
 import kotlinx.android.synthetic.main.favorites_layout.*
@@ -89,7 +89,8 @@ class FavoritesFragment : Fragment() {
                 AREA_DIVIDER_TYPE -> favoriteDividerText.text = getString(R.string.favorites_area_divider_text)
                 MAP_ITEM_TYPE -> {
                     val map = FavoritesList.favoriteMaps[FavoritesList.positionInList(adapterPosition)]
-                    ImageLoader.getInstance().displayImage(map.imageUrl, favoritesMapItemImage)
+                    GlideApp.with(this@FavoritesFragment).load(map.imageUrl)
+                        .into(favoritesMapItemImage)
                     favoritesMapItemArea.text = map.skiArea.name
                     favoritesMapItemYear.text = map.year.toString()
                     itemView.setOnClickListener {
@@ -140,7 +141,7 @@ class FavoritesFragment : Fragment() {
                     favoritesAreaCurrentMap.setOnClickListener {
                         CoroutineScope(Dispatchers.IO).launch {
                             val mapKey = AreaXMLParser.parseFull(area.id).maps[0].id
-                            withContext(Dispatchers.Main){
+                            withContext(Dispatchers.Main) {
                                 val activity = context as FragmentActivity
                                 val ft = activity.supportFragmentManager.beginTransaction()
                                 ft.addToBackStack("mapView")

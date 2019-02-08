@@ -21,12 +21,14 @@ import com.google.android.material.chip.Chip
 import com.like.LikeButton
 import com.like.OnLikeListener
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.explore_header.*
 import kotlinx.android.synthetic.main.explore_item_area.*
 import kotlinx.android.synthetic.main.explore_item_region.*
 import kotlinx.android.synthetic.main.explore_layout.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
 
+const val EXPLORE_HEADER_ITEM_TYPE = 98342
 const val EXPLORE_AREA_ITEM_TYPE = 32940
 const val EXPLORE_REGION_ITEM_TYPE = 34987
 
@@ -52,22 +54,7 @@ class ExploreFragment : Fragment() {
             }
         }
 
-        switchRegionButton.setOnClickListener {
-            val popup = PopupMenu(context, switchRegionButton)
-            popup.menuInflater.inflate(R.menu.region_switcher, popup.menu)
-            popup.show()
-            popup.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.region_americas -> setParentRegion(1)
-                    R.id.region_europe -> setParentRegion(2)
-                    R.id.region_asia -> setParentRegion(3)
-                    R.id.region_oceania -> setParentRegion(4)
-                    else -> return@setOnMenuItemClickListener false
-                }
 
-                return@setOnMenuItemClickListener true
-            }
-        }
 
     }
 
@@ -84,10 +71,8 @@ class ExploreFragment : Fragment() {
                     exploreAdapter = exploreAdapter()
                     exploreRegionRecycler.layoutManager = LinearLayoutManager(context)
                     exploreRegionRecycler.adapter = exploreAdapter
-                    exploreHeaderRegionName.text = RegionList.currentRegion().name
                 } else {
                     exploreAdapter.notifyDataSetChanged()
-                    exploreHeaderRegionName.text = RegionList.currentRegion().name
                 }
             }
         }
@@ -98,54 +83,73 @@ class ExploreFragment : Fragment() {
         .itemCount {
             RegionList.currentRegion().let {
                 if (it.children.isEmpty()) it.areas.size else it.children.size
-            }
+            }+1
         }
         .view { viewType, parent ->
-            when (viewType) {
-                EXPLORE_REGION_ITEM_TYPE -> layoutInflater.inflate(
-                    R.layout.explore_item_region,
-                    parent,
-                    false
-                )
-                else -> layoutInflater.inflate(R.layout.explore_item_area, parent, false)
+            val layout = when (viewType) {
+                EXPLORE_REGION_ITEM_TYPE -> R.layout.explore_item_region
+                EXPLORE_AREA_ITEM_TYPE -> R.layout.explore_item_area
+                else-> R.layout.explore_header
             }
+            layoutInflater.inflate(layout, parent, false)
         }
         .bind { position ->
             RegionList.currentRegion().apply {
-                if (itemViewType == EXPLORE_REGION_ITEM_TYPE) {
-                    val region = children[position]
-                    exploreRegionName.text = region.name
-                    Utils.showIfAvailible(region.mapCount, exploreRegionMaps, R.string.explore_item_region_maps)
-                    chipChild(0, region, exploreRegionChildrenChip1)
-                    chipChild(1, region, exploreRegionChildrenChip2)
-                    itemView.setOnClickListener {
-                        activity!!.loadingIndicator.visibility = View.VISIBLE
-                        nextRegion(region)
-                        activity!!.switchRegionButton.visibility = View.GONE
-                        activity!!.exploreHeaderRegionName.text = RegionList.currentRegion().name
+                when(itemViewType){
+                    EXPLORE_REGION_ITEM_TYPE->{
+                        val region = children[position-1]
+                        exploreRegionName.text = region.name
+                        Utils.showIfAvailible(region.mapCount, exploreRegionMaps, R.string.explore_item_region_maps)
+                        chipChild(0, region, exploreRegionChildrenChip1)
+                        chipChild(1, region, exploreRegionChildrenChip2)
+                        itemView.setOnClickListener {
+                            activity!!.loadingIndicator.visibility = View.VISIBLE
+                            nextRegion(region)
+                        }
                     }
-                } else {
-                    exploreItemAreaName.text = areas[position].name
-                    areaLikeButton.apply {
-                        isLiked = FavoritesList.contains(areas[position])
-                        setOnLikeListener(object : OnLikeListener {
-                            override fun liked(p0: LikeButton?) {
-                                FavoritesList.add(areas[position])
-                            }
+                    EXPLORE_AREA_ITEM_TYPE->{
+                        val area = areas[position-1]
+                        exploreItemAreaName.text = area.name
+                        areaLikeButton.apply {
+                            isLiked = FavoritesList.contains(area)
+                            setOnLikeListener(object : OnLikeListener {
+                                override fun liked(p0: LikeButton?) { FavoritesList.add(area) }
+                                override fun unLiked(p0: LikeButton?) { FavoritesList.remove(area) }
+                            })
+                        }
+                        itemView.setOnClickListener { openAreaView(area) }
+                    }
+                    EXPLORE_HEADER_ITEM_TYPE->{
+                        exploreHeaderRegionName.text = RegionList.currentRegion().name
+                        switchRegionButton.apply {
+                            visibility = if (RegionList.backStack.size == 1) View.VISIBLE else View.GONE
+                            setOnClickListener {
+                                val popup = PopupMenu(context, switchRegionButton)
+                                popup.menuInflater.inflate(R.menu.region_switcher, popup.menu)
+                                popup.show()
+                                popup.setOnMenuItemClickListener {
+                                    when (it.itemId) {
+                                        R.id.region_americas -> setParentRegion(1)
+                                        R.id.region_europe -> setParentRegion(2)
+                                        R.id.region_asia -> setParentRegion(3)
+                                        R.id.region_oceania -> setParentRegion(4)
+                                        else -> return@setOnMenuItemClickListener false
+                                    }
 
-                            override fun unLiked(p0: LikeButton?) {
-
+                                    return@setOnMenuItemClickListener true
+                                }
                             }
-                        })
+                        }
                     }
-                    itemView.setOnClickListener {
-                        openAreaView(areas[position])
-                    }
+
                 }
 
             }
 
-        }.getItemViewType {
+        }.getItemViewType {pos->
+            if(pos==0){
+                return@getItemViewType EXPLORE_HEADER_ITEM_TYPE
+            }
             if (RegionList.currentRegion().children.isEmpty()) EXPLORE_AREA_ITEM_TYPE else EXPLORE_REGION_ITEM_TYPE
         }
 
@@ -184,8 +188,6 @@ class ExploreFragment : Fragment() {
                         nextRegion(region.children.sortedWith(Comparator { o1, o2 ->
                             o2.mapCount.compareTo(o1.mapCount)
                         })[position])
-                        activity!!.switchRegionButton.visibility = View.GONE
-                        activity!!.exploreHeaderRegionName.text = RegionList.currentRegion().name
                     }
                 }
             }

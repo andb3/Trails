@@ -21,13 +21,10 @@ import com.andb.apps.trails.utils.Utils
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.xml.AreaXMLParser
 import com.andb.apps.trails.xml.MapXMLParser
+import com.bumptech.glide.Glide
 import com.github.rongi.klaster.Klaster
 import com.like.LikeButton
 import com.like.OnLikeListener
-import com.nostra13.universalimageloader.core.DisplayImageOptions
-import com.nostra13.universalimageloader.core.ImageLoader
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener
-import com.nostra13.universalimageloader.core.process.BitmapProcessor
 import io.alterac.blurkit.BlurKit
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.area_view.*
@@ -118,32 +115,16 @@ class AreaViewFragment : Fragment() {
     }
 
 
-    private val options = DisplayImageOptions.Builder()
-        .cacheInMemory(true)
-        .postProcessor(BitmapProcessor { bitmap ->
-            return@BitmapProcessor BlurKit.getInstance().blur(bitmap, 1)
-        }).build()
-
     fun mapAdapter() = Klaster.get()
         .itemCount { skiArea.maps.size }
         .view(R.layout.map_list_item, layoutInflater)
         .bind { position ->
             val map = skiArea.maps[position]
-            if (map.loaded) {
-                val loadedImage = ImageLoader.getInstance().loadImageSync(map.imageUrl, options)
-                mapListItemImage.setImageBitmap(loadedImage)
-            } else {
-                ImageLoader.getInstance().displayImage(map.imageUrl,
-                    mapListItemImage, options, object : SimpleImageLoadingListener() {
-                        override fun onLoadingComplete(imageUri: String?, view: View?, loadedImage: Bitmap?) {
-                            //val blurredImage = BlurKit.getInstance().blur(mapListItemImage, 2)
-                            //mapListItemImage.setImageBitmap(blurredImage)
-                            map.loaded = true
-                        }
+            GlideApp.with(this@AreaViewFragment)
+                .load(map.imageUrl)
+                .fitCenter()
+                .into(mapListItemImage)
 
-                    })
-
-            }
             mapListItemYear.text = skiArea.maps[position].year.toString()
             itemView.setOnClickListener {
                 val activity = context as FragmentActivity
