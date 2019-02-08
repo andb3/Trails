@@ -9,6 +9,12 @@
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
+    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/mapImageView"
+        />
+
     <ProgressBar
         android:id="@+id/mapLoadingIndicator"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
@@ -21,24 +27,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="parent" />
-
-    <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/mapPdfView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <com.ortiz.touchview.TouchImageView
-        android:id="@+id/skiMapImage"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:contentDescription="@string/map_image_content_description"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_map_black_24dp"
-        app:tint="@android:color/white" />
 
     <FrameLayout
         android:id="@+id/frameLayout"
