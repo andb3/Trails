@@ -40,11 +40,11 @@ object MapXMLParser {
         return map
     }
 
-    fun parseThumbnail(mapId: Int): SkiMap?{
+    fun parseThumbnail(mapId: Int, size: Int = 100): SkiMap?{
         val parent = getNode(mapId) ?: return null
         val baseMap = parseBase(parent) ?: return null
 
-        val imageUrl = parseThumbnails(parent)
+        val imageUrl = parseThumbnails(parent, size)
         preloadThumbnail(imageUrl)
 
         val map = SkiMap(baseMap, imageUrl)
@@ -102,7 +102,7 @@ object MapXMLParser {
         }
     }
 
-    private fun parseThumbnails(element: Element): String{
+    private fun parseThumbnails(element: Element, size: Int = 100): String{
         val imageTags = element.getElementsByTagName("thumbnail")
         var imageWidth = 1000
         var imageUrl = ""
@@ -110,7 +110,7 @@ object MapXMLParser {
             val skiMapThumbnail = imageTags.item(t) as Element
             if (skiMapThumbnail.hasAttribute("width")) {
                 val width = skiMapThumbnail.getAttribute("width").toInt()
-                if (width < imageWidth) {
+                if (width in size..(imageWidth - 1)) {
                     val tempUrl = skiMapThumbnail.getAttribute("url")
                     if (!tempUrl.isEmpty()) {
                         imageWidth = width

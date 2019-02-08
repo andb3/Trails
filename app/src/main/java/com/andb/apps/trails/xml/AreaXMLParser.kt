@@ -167,7 +167,9 @@ object AreaXMLParser {
         for (r in 0 until skiAreaRegions.length) {
             val regionTag = skiAreaRegions.item(r) as Element
             val regionId = regionTag.getAttribute("id").toInt()
-            regions.add(regionId)
+            if(regionId!=508/*no fantasy-land for now*/) {
+                regions.add(regionId)
+            }
         }
         return regions
     }

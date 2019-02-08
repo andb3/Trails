@@ -43,6 +43,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.viewpager:viewpager:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'
@@ -62,6 +63,11 @@ dependencies {
     implementation 'com.github.barteksc:android-pdf-viewer:3.1.0-beta.1'//pdf display
     implementation 'com.github.jd-alexander:LikeButton:0.2.3'//favorites button
     implementation 'com.jonathanfinerty.once:once:1.2.2'//one-off operations
+    implementation 'io.alterac.blurkit:blurkit:1.1.0'//blur library for low-res images
+/*    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'//unified imageview
+    implementation 'de.number42:subsampling-pdf-decoder:0.1.0@aar'//pdf plugin for above*/
+
+
 
 
 

@@ -68,21 +68,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
 
 
         CoroutineScope(Dispatchers.IO).launch {
             setupData(pager)
             AreaList.setup()
-
         }
-        toolbar.subtitle = subtitleFromPage(0)
-        pager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                toolbar.subtitle = subtitleFromPage(position)
-            }
-        })
         navigation.setOnNavigationItemSelectedListener {
             when (it.itemId){
                 R.id.navigation_fav -> pager.currentItem = 0
@@ -133,19 +124,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun subtitleFromPage(page: Int): String {
-        return when (page) {
-            1 -> {
-                if (!RegionList.backStack.isEmpty()) {
-                    RegionList.currentRegion().name
-                } else {
-                    ""
-                }
-            }
-            else -> ""
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.overflow, menu)
         return true
@@ -168,14 +146,10 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {
             super.onBackPressed()
-            if (supportFragmentManager.backStackEntryCount <= 0) {
-                toolbar.title = getString(R.string.app_name)
-                toolbar.subtitle = subtitleFromPage(pager.currentItem)
-            }
         } else if (RegionList.backStack.size > 1 && pager.currentItem == 1) {
             RegionList.drop()
             exploreFragment.exploreAdapter.notifyDataSetChanged()
-            toolbar.subtitle = RegionList.currentRegion().name
+            exploreHeaderRegionName.text = RegionList.currentRegion().name
             if (RegionList.backStack.size == 1) {
                 switchRegionButton.visibility = View.VISIBLE
             }

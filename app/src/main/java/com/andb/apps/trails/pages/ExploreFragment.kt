@@ -84,14 +84,10 @@ class ExploreFragment : Fragment() {
                     exploreAdapter = exploreAdapter()
                     exploreRegionRecycler.layoutManager = LinearLayoutManager(context)
                     exploreRegionRecycler.adapter = exploreAdapter
-                    activity!!.apply {
-                        if (pager.currentItem == 1) {
-                            toolbar.subtitle = RegionList.currentRegion().name
-                        }
-                    }
+                    exploreHeaderRegionName.text = RegionList.currentRegion().name
                 } else {
-                    activity!!.toolbar.subtitle = RegionList.currentRegion().name
                     exploreAdapter.notifyDataSetChanged()
+                    exploreHeaderRegionName.text = RegionList.currentRegion().name
                 }
             }
         }
@@ -126,6 +122,7 @@ class ExploreFragment : Fragment() {
                         activity!!.loadingIndicator.visibility = View.VISIBLE
                         nextRegion(region)
                         activity!!.switchRegionButton.visibility = View.GONE
+                        activity!!.exploreHeaderRegionName.text = RegionList.currentRegion().name
                     }
                 } else {
                     exploreItemAreaName.text = areas[position].name
@@ -167,14 +164,9 @@ class ExploreFragment : Fragment() {
     }
 
     fun nextRegion(region: SkiRegion) {
-        CoroutineScope(Dispatchers.IO).launch {
-            RegionList.backStack.add(region)
-            withContext(Dispatchers.Main) {
-                activity!!.toolbar.subtitle = RegionList.currentRegion().name
-                activity!!.loadingIndicator.visibility = View.GONE
-                exploreAdapter.notifyDataSetChanged()
-            }
-        }
+        RegionList.backStack.add(region)
+        activity!!.loadingIndicator.visibility = View.GONE
+        exploreAdapter.notifyDataSetChanged()
     }
 
     private fun chipChild(position: Int, region: SkiRegion, chip: Chip) {
@@ -192,6 +184,8 @@ class ExploreFragment : Fragment() {
                         nextRegion(region.children.sortedWith(Comparator { o1, o2 ->
                             o2.mapCount.compareTo(o1.mapCount)
                         })[position])
+                        activity!!.switchRegionButton.visibility = View.GONE
+                        activity!!.exploreHeaderRegionName.text = RegionList.currentRegion().name
                     }
                 }
             }

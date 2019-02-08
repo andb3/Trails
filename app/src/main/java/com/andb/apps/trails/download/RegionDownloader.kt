@@ -12,7 +12,7 @@ fun setupRegions(): Boolean {
 
         CoroutineScope(Dispatchers.IO).launch {
             val jobs = ArrayList<Job>()
-            for (i in 1..4) {
+            for (i in 1..6) {
                 val job = CoroutineScope(Dispatchers.IO).launch {
                     RegionXMLParser.parseParent(i)
                 }

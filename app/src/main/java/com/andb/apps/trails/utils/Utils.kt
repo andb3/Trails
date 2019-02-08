@@ -1,6 +1,7 @@
 package com.andb.apps.trails.utils
 
 import android.content.Context
+import android.content.res.Resources
 import android.view.View
 import android.widget.TextView
 
@@ -28,4 +29,9 @@ object Utils {
             }
         }
     }
+}
+
+fun dpToPx(dp: Int): Int{
+    val scale = Resources.getSystem().displayMetrics.density
+    return (dp * scale).toInt()
 }
