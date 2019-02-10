@@ -16,6 +16,7 @@ import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.utils.Utils
+import com.andb.apps.trails.views.items.AreaItem
 import com.andb.apps.trails.xml.AreaXMLParser
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.favorites_area_item.*
@@ -57,47 +58,32 @@ class SearchFragment : Fragment() {
 
     }
 
-
-
     fun searchAdapter() = Klaster.get()
         .itemCount { list.size }
-        .view(R.layout.favorites_area_item, layoutInflater)
+        .view { _, _ ->
+            AreaItem(context?: this.requireContext()).also {
+                it.layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+        }
         .bind {position ->
             val area = list[position]
-            favoritesAreaItemName.text = area.name
-            Utils.showIfAvailible(area.liftCount, favoritesAreaItemLifts, R.string.area_lift_count_text)
-            Utils.showIfAvailible(area.runCount, favoritesAreaItemRuns, R.string.area_run_count_text)
-            favoritesAreaCurrentMap.setOnClickListener {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val mapKey = AreaXMLParser.parseFull(area.id).maps[0].id
-                    withContext(Dispatchers.Main){
-                        val activity = context as FragmentActivity
-                        val ft = activity.supportFragmentManager.beginTransaction()
-                        ft.addToBackStack("mapView")
-
-                        val fragment = MapViewFragment()
-                        val bundle = Bundle()
-                        bundle.putInt("mapKey", mapKey)
-                        fragment.arguments = bundle
-
-                        ft.add(R.id.mapViewHolder, fragment)
-                        ft.commit()
-                    }
-                }
-
-            }
-            itemView.setOnClickListener {
-                val fragmentActivity = context as FragmentActivity
-                val ft = fragmentActivity.supportFragmentManager.beginTransaction()
-
-                val intent = AreaViewFragment()
-                intent.arguments =
-                    Bundle().also { it.putInt("areaKey", area.id) }
-                ft.add(R.id.exploreAreaReplacement, intent)
-                ft.addToBackStack("areaView")
-                ft.commit()
-            }
+            (itemView as AreaItem).setup(area, this@SearchFragment::openAreaView)
 
         }
         .build()
+
+    fun openAreaView(area: BaseSkiArea){
+        val fragmentActivity = context as FragmentActivity
+        val ft = fragmentActivity.supportFragmentManager.beginTransaction()
+
+        val intent = AreaViewFragment()
+        intent.arguments =
+            Bundle().also { it.putInt("areaKey", area.id) }
+        ft.add(R.id.exploreAreaReplacement, intent)
+        ft.addToBackStack("areaView")
+        ft.commit()
+    }
 }

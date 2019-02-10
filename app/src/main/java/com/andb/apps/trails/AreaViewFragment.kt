@@ -1,9 +1,7 @@
 package com.andb.apps.trails
 
 import android.content.res.ColorStateList
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.AsyncTask
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
@@ -11,24 +9,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.utils.Utils
 import com.andb.apps.trails.utils.dpToPx
+import com.andb.apps.trails.views.items.MapItem
 import com.andb.apps.trails.xml.AreaXMLParser
-import com.andb.apps.trails.xml.MapXMLParser
-import com.bumptech.glide.Glide
 import com.github.rongi.klaster.Klaster
-import com.like.LikeButton
-import com.like.OnLikeListener
-import io.alterac.blurkit.BlurKit
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.area_view.*
-import kotlinx.android.synthetic.main.map_list_item.*
+import kotlinx.android.synthetic.main.area_layout.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
 
@@ -48,7 +39,7 @@ class AreaViewFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.area_view, container, false)
+        return inflater.inflate(R.layout.area_layout, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -117,53 +108,16 @@ class AreaViewFragment : Fragment() {
 
     fun mapAdapter() = Klaster.get()
         .itemCount { skiArea.maps.size }
-        .view(R.layout.map_list_item, layoutInflater)
+        .view { _, _ ->
+            MapItem(context?: this.requireContext()).also {
+                it.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+            }
+        }
         .bind { position ->
-            val map = skiArea.maps[position]
-            GlideApp.with(this@AreaViewFragment)
-                .load(map.imageUrl)
-                .fitCenter()
-                .into(mapListItemImage)
+            (itemView as MapItem).setup(skiArea.maps[position])
 
-            mapListItemYear.text = skiArea.maps[position].year.toString()
-            itemView.setOnClickListener {
-                val activity = context as FragmentActivity
-                val ft = activity.supportFragmentManager.beginTransaction()
-                ft.addToBackStack("mapView")
-
-                val fragment = MapViewFragment()
-                val bundle = Bundle()
-                bundle.putInt("mapKey", skiArea.maps[position].id)
-                fragment.arguments = bundle
-
-                ft.add(R.id.mapViewHolder, fragment)
-                ft.commit()
-
-            }
-
-            mapListFavoriteButton.apply {
-                isLiked = FavoritesList.contains(skiArea.maps[position])
-                setOnLikeListener(object : OnLikeListener {
-                    override fun liked(p0: LikeButton?) {
-                        AsyncTask.execute {
-                            val map = MapXMLParser.parseFull(skiArea.maps[position].id, save = true)
-                            if (map != null) {
-                                FavoritesList.add(map)
-                            }
-                        }
-                    }
-
-                    override fun unLiked(p0: LikeButton?) {
-                        AsyncTask.execute {
-                            val map = MapXMLParser.parseFull(skiArea.maps[position].id)
-                            if (map != null) {
-                                FavoritesList.remove(map)
-                            }
-
-                        }
-                    }
-                })
-            }
         }
         .build()
 }

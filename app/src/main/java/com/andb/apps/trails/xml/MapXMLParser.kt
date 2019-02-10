@@ -16,10 +16,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 
 object MapXMLParser {
-    fun parseFull(
-        mapId: Int,
-        save: Boolean = false
-    ): SkiMap? {
+    fun parseFull(mapId: Int): SkiMap? {
         val parent = getNode(mapId) ?: return null
         val baseMap = parseBase(parent) ?: return null
 
@@ -100,7 +97,7 @@ object MapXMLParser {
         }
     }
 
-    private fun parseThumbnails(element: Element, size: Int = 100): String{
+    fun parseThumbnails(element: Element, size: Int = 100): String{
         val imageTags = element.getElementsByTagName("thumbnail")
         var imageWidth = 1000
         var imageUrl = ""

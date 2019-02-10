@@ -12,7 +12,7 @@ import com.andb.apps.trails.objects.RegionAreaJoin
 import com.andb.apps.trails.objects.SkiMap
 import dev.matrix.roomigrant.GenerateRoomMigrations
 
-@Database(entities = [SkiMap::class, BaseSkiArea::class, BaseSkiRegion::class, RegionAreaJoin::class], version = 3, exportSchema = true)
+@Database(entities = [SkiMap::class, BaseSkiArea::class, BaseSkiRegion::class, RegionAreaJoin::class], version = 5, exportSchema = true)
 @GenerateRoomMigrations
 abstract class Database : RoomDatabase() {
     abstract fun mapsDao(): MapsDao

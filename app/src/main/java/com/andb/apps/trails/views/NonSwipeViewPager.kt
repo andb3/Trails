@@ -1,11 +1,10 @@
-package com.andb.apps.trails
+package com.andb.apps.trails.views
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.viewpager.widget.ViewPager
-
-
+import com.andb.apps.trails.R
 
 
 class NonSwipeViewPager(context: Context, attrs: AttributeSet) : ViewPager(context, attrs) {

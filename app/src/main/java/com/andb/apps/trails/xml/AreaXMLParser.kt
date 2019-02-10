@@ -9,12 +9,19 @@ import com.andb.apps.trails.objects.RegionAreaJoin
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
 import kotlinx.coroutines.*
+import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
+import java.io.StringWriter
 import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
+
 
 object AreaXMLParser {
 
@@ -29,34 +36,44 @@ object AreaXMLParser {
     }
 
 
-    fun parseAll(nodeList: NodeList) {
+    suspend fun parseAll(nodeList: NodeList) {
+        Log.d("areaParse", "parsing ${nodeList.length} areas")
+        val jobs = ArrayList<Deferred<BaseSkiArea>>()
         for (n in 0 until nodeList.length) {
-            val node = nodeList.item(n) as Element
-            val baseArea = parseBase(node)
+            val job = CoroutineScope(Dispatchers.IO).launch {
+                val node = nodeList.item(n) as Element
+                val id = node.getAttribute("id").toInt()
+                val baseArea = parseBase(id)
 
-            AsyncTask.execute {
-                if (areasDao().getAreasById(baseArea.id).isEmpty()) {
-                    areasDao().insertArea(baseArea)
-                } else {
-                    areasDao().updateArea(baseArea)
-                }
-
-                parseRegions(node).forEach { regionId ->
-                    Log.d("creatingJoin", "regionId: $regionId, areaId: ${baseArea.id}")
-                    val regionAreaJoin = RegionAreaJoin(regionId = regionId, areaId = baseArea.id)
-
-                    if (!regionAreaDao().getJoinsByBoth(regionId, baseArea.id).contains(regionAreaJoin)) {
-                        regionAreaDao().insert(regionAreaJoin)
-
-                        Log.d("addingJoin", "Adding")
+                AsyncTask.execute {
+                    if (areasDao().getAreasById(baseArea.id).isEmpty()) {
+                        areasDao().insertArea(baseArea)
                     } else {
-                        Log.d("updatingJoin", "Updating")
-                        regionAreaDao().update(regionAreaJoin)
+                        areasDao().updateArea(baseArea)
                     }
 
+                    parseRegions(node).forEach { regionId ->
+                        Log.d("creatingJoin", "regionId: $regionId, areaId: ${baseArea.id}")
+                        val regionAreaJoin = RegionAreaJoin(regionId = regionId, areaId = baseArea.id)
+
+                        if (!regionAreaDao().getJoinsByBoth(regionId, baseArea.id).contains(regionAreaJoin)) {
+                            regionAreaDao().insert(regionAreaJoin)
+
+                            Log.d("addingJoin", "Adding")
+                        } else {
+                            Log.d("updatingJoin", "Updating")
+                            regionAreaDao().update(regionAreaJoin)
+                        }
+
+                    }
                 }
             }
+
         }
+        jobs.forEach {
+            it.join()
+        }
+        Log.d("areaParse", " finished parsing ${nodeList.length} areas")
     }
 
     suspend fun parseFull(areaId: Int, baseSkiArea: BaseSkiArea? = null): SkiArea {
@@ -125,7 +142,22 @@ object AreaXMLParser {
         val website = parseWebsite(node)
         Log.d("area xml parsed", "Website: $website")
 
-        return BaseSkiArea(id, name, liftCount, runCount, openingYear, website)
+        val maps = parseMaps(node, 1)
+        val mapCount = maps.first
+        Log.d("area xml parsed", "Map Count: $mapCount")
+
+        val previewId = if (maps.second.isNotEmpty()) {
+            maps.second[0]
+        } else {
+            -1
+        }
+
+        val preview: String = MapXMLParser.parseThumbnail(previewId)?.imageUrl ?: ""
+
+        Log.d("area xml parsed", "Map Url: $preview")
+
+
+        return BaseSkiArea(id, name, liftCount, runCount, openingYear, website, mapCount, previewId, preview)
 
     }
 
@@ -135,9 +167,19 @@ object AreaXMLParser {
         val db = dbf.newDocumentBuilder()
         val doc = db.parse(InputSource(url.openStream()))
         doc.documentElement.normalize()
+        Log.d("getNode", doc.toXMLString())
 
         val nodeList = doc.getElementsByTagName("skiArea")
         return nodeList.item(0) as Element
+    }
+
+    fun Document.toXMLString(): String {
+        val tf = TransformerFactory.newInstance()
+        val transformer = tf.newTransformer()
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
+        val writer = StringWriter()
+        transformer.transform(DOMSource(this), StreamResult(writer))
+        return writer.buffer.toString().replace("\n|\r", "")
     }
 
     private fun parseLiftCount(element: Element): Int {
@@ -167,10 +209,30 @@ object AreaXMLParser {
         for (r in 0 until skiAreaRegions.length) {
             val regionTag = skiAreaRegions.item(r) as Element
             val regionId = regionTag.getAttribute("id").toInt()
-            if(regionId!=508/*no fantasy-land for now*/) {
+            if (regionId != 508/*no fantasy-land for now*/) {
                 regions.add(regionId)
             }
         }
         return regions
+    }
+
+    fun parseMaps(element: Element, max: Int = -1): Pair<Int, ArrayList<Int>> {
+        Log.d("area xml parsed", "map parse started, content: ${(element.getElementsByTagName("skiMaps").item(0) as Element).childNodes.length}")
+        val skiAreaMaps = element.getElementsByTagName("skiMap")
+        Log.d("area xml parsed", "map parse element")
+        val mapCount = skiAreaMaps.length
+        Log.d("area xml parsed", "map parse count $mapCount")
+        val maps = ArrayList<Int>()
+        val returnCount = if (max < 0 || max > mapCount) mapCount else max
+        Log.d("area xml parsed", "map return count $returnCount")
+        for (m in 0 until returnCount) {
+            Log.d("area xml parsed", "map parse loop $m")
+            val mapTag = skiAreaMaps.item(m) as Element
+            Log.d("area xml parsed", "map parse loop element $m")
+            maps.add(mapTag.getAttribute("id").toInt())
+            Log.d("area xml parsed", "map parse added ${maps[m]}")
+        }
+
+        return Pair(mapCount, maps)
     }
 }

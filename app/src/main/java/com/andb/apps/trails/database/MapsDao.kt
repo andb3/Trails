@@ -15,6 +15,12 @@ interface MapsDao{
     @Delete
     fun deleteMap(map: SkiMap)
 
+/*    @Query("SELECT * FROM SkiMap WHERE map_id = :id")
+    fun getMapById(id: Int): SkiMap*/
+
     @Query("SELECT * FROM SkiMap")
     fun getAll(): List<SkiMap>
+
+/*    @Query("SELECT * FROM SkiMap WHERE map_id = :id")
+    fun deleteMapById(id: Int)*/
 }

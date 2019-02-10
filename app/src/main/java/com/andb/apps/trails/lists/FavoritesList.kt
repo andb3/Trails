@@ -1,6 +1,7 @@
 package com.andb.apps.trails.lists
 
 import android.os.AsyncTask
+import androidx.recyclerview.widget.RecyclerView
 import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.database.mapsDao
 import com.andb.apps.trails.objects.BaseSkiArea
@@ -9,8 +10,10 @@ import com.andb.apps.trails.objects.SkiMap
 object FavoritesList {
     val favoriteMaps = ArrayList<SkiMap>()
     val favoriteAreas = ArrayList<BaseSkiArea>()
+    lateinit var adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
 
-    fun init() {
+    fun init(adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>) {
+        this.adapter = adapter
         favoriteMaps.apply {
             clear()
             addAll(mapsDao().getAll())
@@ -19,6 +22,7 @@ object FavoritesList {
             clear()
             addAll(areasDao().getFavorites())
         }
+
     }
 
     fun contains(map: SkiMap): Boolean {
@@ -54,6 +58,7 @@ object FavoritesList {
         AsyncTask.execute {
             mapsDao().insertMap(map)
         }
+        adapter.notifyDataSetChanged()
     }
 
     fun add(area: BaseSkiArea) {
@@ -63,13 +68,15 @@ object FavoritesList {
         AsyncTask.execute {
             areasDao().updateArea(area)
         }
+        adapter.notifyDataSetChanged()
     }
 
     fun remove(map: SkiMap) {
-        favoriteMaps.remove(map)
+        favoriteMaps.removeAll { it.id == map.id }
         AsyncTask.execute {
             mapsDao().deleteMap(map)
         }
+        adapter.notifyDataSetChanged()
     }
 
     fun remove(area: BaseSkiArea) {
@@ -78,6 +85,7 @@ object FavoritesList {
         AsyncTask.execute {
             areasDao().updateArea(area)
         }
+        adapter.notifyDataSetChanged()
     }
 
     fun positionInList(pos: Int): Int {

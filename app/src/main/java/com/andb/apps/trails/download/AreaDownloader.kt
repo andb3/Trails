@@ -5,7 +5,7 @@ import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.xml.AreaXMLParser
 import java.lang.Exception
 
-fun updateAreas():Boolean {
+suspend fun updateAreas():Boolean {
     return try {
         val nodeList = AreaXMLParser.getIndex()
         if (nodeList.length != areasDao().getSize()) {

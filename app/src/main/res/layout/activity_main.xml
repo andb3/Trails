@@ -22,7 +22,7 @@
 
     <view
         android:id="@+id/pager"
-        class="com.andb.apps.trails.NonSwipeViewPager"
+        class="com.andb.apps.trails.views.NonSwipeViewPager"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/navigation"

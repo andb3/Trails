@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import com.andb.apps.trails.download.FileDownloader
 import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.SkiMap
+import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.xml.MapXMLParser
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.Request
@@ -34,7 +35,7 @@ class MapViewFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mapKey = arguments!!.getInt("mapKey")
-        Log.d("inititalized fragment", "mapKey: $mapKey")
+        Log.d("initialized fragment", "mapKey: $mapKey")
     }
 
     override fun onCreateView(
@@ -53,7 +54,7 @@ class MapViewFragment : Fragment() {
         val handler = Handler()
         Thread(Runnable {
             Log.d("MapViewFragment", "before parsing")
-            map = MapXMLParser.parseFull(mapKey, save = FavoritesList.contains(mapKey))
+            map = MapXMLParser.parseFull(mapKey)
             Log.d("MapViewFragment", "after parsing")
             handler.post {
                 map?.apply {

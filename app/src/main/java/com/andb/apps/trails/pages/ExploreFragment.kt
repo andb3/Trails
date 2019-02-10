@@ -16,14 +16,19 @@ import com.andb.apps.trails.lists.RegionList
 import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.objects.SkiRegion
 import com.andb.apps.trails.utils.Utils
+import com.andb.apps.trails.utils.dpToPx
+import com.andb.apps.trails.views.GlideApp
+import com.andb.apps.trails.views.items.AreaItem
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.github.rongi.klaster.Klaster
 import com.google.android.material.chip.Chip
 import com.like.LikeButton
 import com.like.OnLikeListener
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.explore_header.*
-import kotlinx.android.synthetic.main.explore_item_area.*
-import kotlinx.android.synthetic.main.explore_item_region.*
+import kotlinx.android.synthetic.main.area_item.*
+import kotlinx.android.synthetic.main.region_item.*
 import kotlinx.android.synthetic.main.explore_layout.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
@@ -86,22 +91,27 @@ class ExploreFragment : Fragment() {
             }+1
         }
         .view { viewType, parent ->
-            val layout = when (viewType) {
-                EXPLORE_REGION_ITEM_TYPE -> R.layout.explore_item_region
-                EXPLORE_AREA_ITEM_TYPE -> R.layout.explore_item_area
-                else-> R.layout.explore_header
+
+            when (viewType) {
+                EXPLORE_REGION_ITEM_TYPE -> layoutInflater.inflate(R.layout.region_item, parent, false)
+                EXPLORE_AREA_ITEM_TYPE -> AreaItem(context?: this.requireContext()).also {
+                    it.layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                }
+                else->layoutInflater.inflate(R.layout.explore_header, parent, false)
             }
-            layoutInflater.inflate(layout, parent, false)
         }
         .bind { position ->
             RegionList.currentRegion().apply {
                 when(itemViewType){
                     EXPLORE_REGION_ITEM_TYPE->{
                         val region = children[position-1]
-                        exploreRegionName.text = region.name
-                        Utils.showIfAvailible(region.mapCount, exploreRegionMaps, R.string.explore_item_region_maps)
-                        chipChild(0, region, exploreRegionChildrenChip1)
-                        chipChild(1, region, exploreRegionChildrenChip2)
+                        regionName.text = region.name
+                        Utils.showIfAvailible(region.mapCount, regionMaps, R.string.map_count)
+                        chipChild(0, region, regionChildrenChip1)
+                        chipChild(1, region, regionChildrenChip2)
                         itemView.setOnClickListener {
                             activity!!.loadingIndicator.visibility = View.VISIBLE
                             nextRegion(region)
@@ -109,15 +119,7 @@ class ExploreFragment : Fragment() {
                     }
                     EXPLORE_AREA_ITEM_TYPE->{
                         val area = areas[position-1]
-                        exploreItemAreaName.text = area.name
-                        areaLikeButton.apply {
-                            isLiked = FavoritesList.contains(area)
-                            setOnLikeListener(object : OnLikeListener {
-                                override fun liked(p0: LikeButton?) { FavoritesList.add(area) }
-                                override fun unLiked(p0: LikeButton?) { FavoritesList.remove(area) }
-                            })
-                        }
-                        itemView.setOnClickListener { openAreaView(area) }
+                        (itemView as AreaItem).setup(area, this@ExploreFragment::openAreaView)
                     }
                     EXPLORE_HEADER_ITEM_TYPE->{
                         exploreHeaderRegionName.text = RegionList.currentRegion().name
