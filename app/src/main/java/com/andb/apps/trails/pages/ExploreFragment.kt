@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -19,8 +20,11 @@ import com.andb.apps.trails.utils.Utils
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.views.items.AreaItem
+import com.andb.apps.trails.views.items.openAreaView
+import com.bumptech.glide.ListPreloader
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.util.ViewPreloadSizeProvider
 import com.github.rongi.klaster.Klaster
 import com.google.android.material.chip.Chip
 import com.like.LikeButton
@@ -58,26 +62,26 @@ class ExploreFragment : Fragment() {
                 setParentRegion(1, true)
             }
         }
+    }
 
-
-
+    fun glideRV(){
+        val preloader = ViewPreloadSizeProvider<ImageView>()
     }
 
     private fun setParentRegion(id: Int, start: Boolean = false) {
-        activity!!.loadingIndicator.visibility = View.VISIBLE
         CoroutineScope(Dispatchers.IO).launch {
             RegionList.backStack.apply {
                 clear()
                 add(RegionList.parentRegions[id - 1])
             }
             withContext(Dispatchers.Main) {
-                activity!!.loadingIndicator.visibility = View.GONE
                 if (start) {
                     exploreAdapter = exploreAdapter()
                     exploreRegionRecycler.layoutManager = LinearLayoutManager(context)
                     exploreRegionRecycler.adapter = exploreAdapter
                 } else {
                     exploreAdapter.notifyDataSetChanged()
+                    exploreRegionRecycler.scheduleLayoutAnimation()
                 }
             }
         }
@@ -113,13 +117,12 @@ class ExploreFragment : Fragment() {
                         chipChild(0, region, regionChildrenChip1)
                         chipChild(1, region, regionChildrenChip2)
                         itemView.setOnClickListener {
-                            activity!!.loadingIndicator.visibility = View.VISIBLE
                             nextRegion(region)
                         }
                     }
                     EXPLORE_AREA_ITEM_TYPE->{
                         val area = areas[position-1]
-                        (itemView as AreaItem).setup(area, this@ExploreFragment::openAreaView)
+                        (itemView as AreaItem).setup(area)
                     }
                     EXPLORE_HEADER_ITEM_TYPE->{
                         exploreHeaderRegionName.text = RegionList.currentRegion().name
@@ -157,22 +160,12 @@ class ExploreFragment : Fragment() {
 
         .build()
 
-    fun openAreaView(area: BaseSkiArea) {
-        val fragmentActivity = context as FragmentActivity
-        val ft = fragmentActivity.supportFragmentManager.beginTransaction()
 
-        val intent = AreaViewFragment()
-        intent.arguments =
-            Bundle().also { it.putInt("areaKey", area.id) }
-        ft.add(R.id.exploreAreaReplacement, intent)
-        ft.addToBackStack("areaView")
-        ft.commit()
-    }
 
     fun nextRegion(region: SkiRegion) {
         RegionList.backStack.add(region)
-        activity!!.loadingIndicator.visibility = View.GONE
         exploreAdapter.notifyDataSetChanged()
+        exploreRegionRecycler.scheduleLayoutAnimation()
     }
 
     private fun chipChild(position: Int, region: SkiRegion, chip: Chip) {
@@ -185,7 +178,7 @@ class ExploreFragment : Fragment() {
                 text = chipText
                 setOnClickListener {
                     if (region.children.isEmpty()) {
-                        openAreaView(region.areas[position])
+                        openAreaView(region.areas[position], context, chip)
                     } else {
                         nextRegion(region.children.sortedWith(Comparator { o1, o2 ->
                             o2.mapCount.compareTo(o1.mapCount)

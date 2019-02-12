@@ -1,7 +1,9 @@
 package com.andb.apps.trails
 
 import android.app.ProgressDialog
+import android.graphics.Color
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -72,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             setupData(pager)
             AreaList.setup()
         }
-        navigation.setOnNavigationItemSelectedListener {
+        navigation.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(pager))/* {
             when (it.itemId){
                 R.id.navigation_fav -> pager.currentItem = 0
 
@@ -82,7 +84,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             true
-        }
+        }*/
 
 
     }
@@ -142,11 +144,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        setStatusBarColors(this)
         if (supportFragmentManager.backStackEntryCount > 0) {
             super.onBackPressed()
         } else if (RegionList.backStack.size > 1 && pager.currentItem == 1) {
             RegionList.drop()
             exploreFragment.exploreAdapter.notifyDataSetChanged()
+            exploreRegionRecycler.scheduleLayoutAnimation()
         } else {
             super.onBackPressed()
         }

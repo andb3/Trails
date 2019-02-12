@@ -8,6 +8,7 @@ import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.objects.BaseSkiMap
 import com.andb.apps.trails.objects.MapArtist
 import com.andb.apps.trails.objects.SkiMap
+import com.andb.apps.trails.utils.makeMapService
 import kotlinx.coroutines.*
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
@@ -52,6 +53,7 @@ object MapXMLParser {
         val dbf = DocumentBuilderFactory.newInstance()
         val db = dbf.newDocumentBuilder()
         val doc = db.parse(InputSource(url.openStream()))
+
 
         try {
             doc.documentElement.normalize()

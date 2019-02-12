@@ -70,20 +70,8 @@ class SearchFragment : Fragment() {
         }
         .bind {position ->
             val area = list[position]
-            (itemView as AreaItem).setup(area, this@SearchFragment::openAreaView)
+            (itemView as AreaItem).setup(area)
 
         }
         .build()
-
-    fun openAreaView(area: BaseSkiArea){
-        val fragmentActivity = context as FragmentActivity
-        val ft = fragmentActivity.supportFragmentManager.beginTransaction()
-
-        val intent = AreaViewFragment()
-        intent.arguments =
-            Bundle().also { it.putInt("areaKey", area.id) }
-        ft.add(R.id.exploreAreaReplacement, intent)
-        ft.addToBackStack("areaView")
-        ft.commit()
-    }
 }

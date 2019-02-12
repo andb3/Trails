@@ -38,7 +38,7 @@ object AreaXMLParser {
 
     suspend fun parseAll(nodeList: NodeList) {
         Log.d("areaParse", "parsing ${nodeList.length} areas")
-        val jobs = ArrayList<Deferred<BaseSkiArea>>()
+        val jobs = ArrayList<Job>()
         for (n in 0 until nodeList.length) {
             val job = CoroutineScope(Dispatchers.IO).launch {
                 val node = nodeList.item(n) as Element
@@ -68,6 +68,7 @@ object AreaXMLParser {
                     }
                 }
             }
+            jobs.add(job)
 
         }
         jobs.forEach {
@@ -93,7 +94,8 @@ object AreaXMLParser {
         for (m in 0 until skiAreaMaps.length) {
             val job = CoroutineScope(Dispatchers.IO).async {
                 val mapTag = skiAreaMaps.item(m) as Element
-                return@async MapXMLParser.parseThumbnail(mapTag.getAttribute("id").toInt())
+                val map = MapXMLParser.parseThumbnail(mapTag.getAttribute("id").toInt())
+                return@async map
             }
             jobs.add(job)
         }

@@ -5,6 +5,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
     <ProgressBar
@@ -12,13 +13,13 @@
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="8dp"
+        android:elevation="96dp"
         android:indeterminate="true"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/pager"
+        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/pager" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <view
         android:id="@+id/pager"
@@ -31,20 +32,22 @@
         app:layout_constraintTop_toTopOf="parent"
         app:swipeable="false" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
+    <com.google.android.material.tabs.TabLayout
         android:id="@+id/navigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="#FAFAFA"
-        app:itemIconTint="@drawable/bottom_icon_selector"
-        app:itemTextColor="@drawable/bottom_icon_selector"
+        android:elevation="16dp"
+        android:fitsSystemWindows="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:menu="@menu/navigation"
-        android:fitsSystemWindows="true">
+        app:tabIconTint="@drawable/bottom_icon_selector"
+        app:tabIndicatorColor="@color/colorAccent"
+        app:tabTextColor="@drawable/bottom_icon_selector">
 
-        <!--        <com.google.android.material.tabs.TabItem
+        <com.google.android.material.tabs.TabItem
             android:id="@+id/favoritesTab"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -63,8 +66,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:icon="@drawable/ic_search_black_24dp"
-            android:text="@string/title_search" />-->
-    </com.google.android.material.bottomnavigation.BottomNavigationView>
+            android:text="@string/title_search" />
+    </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
         android:id="@+id/exploreAreaReplacement"
@@ -82,6 +85,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:elevation="72dp"
+        android:fitsSystemWindows="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
