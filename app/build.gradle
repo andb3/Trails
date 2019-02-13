@@ -65,6 +65,8 @@ dependencies {
     implementation 'de.number42:subsampling-pdf-decoder:0.1.0@aar'//pdf plugin for above
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'//networking
     implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'//networking kotlin coroutines
+    implementation 'org.greenrobot:eventbus:3.1.1' //communicate across threads and service
+
 
     implementation 'com.github.bumptech.glide:glide:4.8.0'//image loader & cache
     kapt 'com.github.bumptech.glide:compiler:4.8.0'//image loader & cache

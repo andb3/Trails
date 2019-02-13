@@ -16,11 +16,11 @@ import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.lists.RegionList
 import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.objects.SkiRegion
+import com.andb.apps.trails.openAreaView
 import com.andb.apps.trails.utils.Utils
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.views.items.AreaItem
-import com.andb.apps.trails.views.items.openAreaView
 import com.bumptech.glide.ListPreloader
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -81,6 +81,7 @@ class ExploreFragment : Fragment() {
                     exploreRegionRecycler.adapter = exploreAdapter
                 } else {
                     exploreAdapter.notifyDataSetChanged()
+                    exploreRegionRecycler.scrollToPosition(0)
                     exploreRegionRecycler.scheduleLayoutAnimation()
                 }
             }
@@ -165,6 +166,7 @@ class ExploreFragment : Fragment() {
     fun nextRegion(region: SkiRegion) {
         RegionList.backStack.add(region)
         exploreAdapter.notifyDataSetChanged()
+        exploreRegionRecycler.scrollToPosition(0)
         exploreRegionRecycler.scheduleLayoutAnimation()
     }
 

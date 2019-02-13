@@ -2,6 +2,7 @@ package com.andb.apps.trails.xml
 
 import android.os.AsyncTask
 import android.util.Log
+import com.andb.apps.trails.InitialDownloadService
 import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.database.regionAreaDao
 import com.andb.apps.trails.objects.BaseSkiArea
@@ -36,16 +37,17 @@ object AreaXMLParser {
     }
 
 
-    suspend fun parseAll(nodeList: NodeList) {
+    suspend fun parseAll(service: InitialDownloadService, nodeList: NodeList) {
         Log.d("areaParse", "parsing ${nodeList.length} areas")
         val jobs = ArrayList<Job>()
+        val saveJobs = ArrayList<Job>()
         for (n in 0 until nodeList.length) {
             val job = CoroutineScope(Dispatchers.IO).launch {
                 val node = nodeList.item(n) as Element
                 val id = node.getAttribute("id").toInt()
                 val baseArea = parseBase(id)
 
-                AsyncTask.execute {
+                val saveJob = CoroutineScope(Dispatchers.IO).launch {
                     if (areasDao().getAreasById(baseArea.id).isEmpty()) {
                         areasDao().insertArea(baseArea)
                     } else {
@@ -67,11 +69,18 @@ object AreaXMLParser {
 
                     }
                 }
+                saveJobs.add(saveJob)
+
             }
             jobs.add(job)
+            service.updateProgress()
 
         }
         jobs.forEach {
+            it.join()
+            service.updateProgress()
+        }
+        saveJobs.forEach {
             it.join()
         }
         Log.d("areaParse", " finished parsing ${nodeList.length} areas")

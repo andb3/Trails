@@ -1,10 +1,12 @@
 package com.andb.apps.trails.download
 
 import android.util.Log
+import com.andb.apps.trails.InitialDownloadService
 import com.andb.apps.trails.xml.RegionXMLParser
 import kotlinx.coroutines.*
 
-fun setupRegions(): Boolean {
+const val PARENT_REGIONS = 6
+suspend fun setupRegions(service: InitialDownloadService): Boolean {
 
 
     return try {//bad code but catches
@@ -12,7 +14,7 @@ fun setupRegions(): Boolean {
 
         CoroutineScope(Dispatchers.IO).launch {
             val jobs = ArrayList<Job>()
-            for (i in 1..6) {
+            for (i in 1..PARENT_REGIONS) {
                 val job = CoroutineScope(Dispatchers.IO).launch {
                     RegionXMLParser.parseParent(i)
                 }
@@ -20,6 +22,7 @@ fun setupRegions(): Boolean {
             }
             jobs.forEach {
                 it.join()
+                service.updateProgress()
             }
         }
 

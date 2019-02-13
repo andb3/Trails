@@ -25,9 +25,14 @@
     <string name="ski_region_placeholder">Ski Region</string>
     <string name="map_count">Maps: %1$d</string>
     <string name="download_progress_title">Initial Download</string>
-    <string name="download_progress_desc">Downloading regions and areas</string>
+    <string name="download_progress_desc">Downloading regions and areas - this might take a while, so you can leave the app and check the progress in the notification</string>
     <string name="download_progress_failed">Download Failed</string>
+    <string name="download_progress_complete">Download Complete</string>
     <string name="download_progress_try_again">Try Again</string>
+    <string name="download_progress_regions">Downloading Regions</string>
+    <string name="download_progress_areas">Downloading Areas</string>
+
+
 
 
 </resources>

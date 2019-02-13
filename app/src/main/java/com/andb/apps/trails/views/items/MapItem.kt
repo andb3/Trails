@@ -10,6 +10,7 @@ import com.andb.apps.trails.MapViewFragment
 import com.andb.apps.trails.R
 import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.SkiMap
+import com.andb.apps.trails.openMapView
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.xml.MapXMLParser
@@ -44,17 +45,7 @@ class MapItem : ConstraintLayout {
         }
         mapListItemYear.text = map.year.toString()
         setOnClickListener {
-            val activity = context as FragmentActivity
-            val ft = activity.supportFragmentManager.beginTransaction()
-            ft.addToBackStack("mapView")
-
-            val fragment = MapViewFragment()
-            val bundle = Bundle()
-            bundle.putInt("mapKey", map.id)
-            fragment.arguments = bundle
-
-            ft.add(R.id.mapViewHolder, fragment)
-            ft.commit()
+            openMapView(map.id, context)
         }
 
         mapListFavoriteButton.apply {

@@ -1,6 +1,7 @@
 package com.andb.apps.trails
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -13,6 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentTransaction
 import com.andb.apps.trails.download.FileDownloader
 import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.SkiMap
@@ -43,11 +46,7 @@ class MapViewFragment : Fragment() {
         Log.d("initialized fragment", "mapKey: $mapKey")
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.map_view, container!!.parent as ViewGroup, false)
     }
 
@@ -56,7 +55,7 @@ class MapViewFragment : Fragment() {
 
         Log.d("MapViewFragment", "before thread")
         setStatusBarColors(activity!!, false)
-        activity?.loadingIndicator?.visibility = View.VISIBLE
+        mapLoadingIndicator.visibility = View.VISIBLE
         val handler = Handler()
         Thread(Runnable {
             Log.d("MapViewFragment", "before parsing")
@@ -73,7 +72,7 @@ class MapViewFragment : Fragment() {
                             .into(object : CustomViewTarget<View, Bitmap>(mapImageView){
                                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                     mapImageView.setImage(ImageSource.cachedBitmap(resource))
-                                    activity?.loadingIndicator?.visibility = View.GONE
+                                    mapLoadingIndicator.visibility = View.GONE
                                 }
 
                                 override fun onLoadFailed(errorDrawable: Drawable?) {
@@ -87,13 +86,13 @@ class MapViewFragment : Fragment() {
                         CoroutineScope(Dispatchers.IO).launch {
                             val file = FileDownloader.downloadFile(imageUrl, MapXMLParser.filenameFromURL(imageUrl))
                             withContext(Dispatchers.Main) {
-                                mapImageView.apply {
+                                mapImageView?.apply {
                                     setMinimumTileDpi(120)
                                     setBitmapDecoderFactory { PDFDecoder(0, file, 10f) }
                                     setRegionDecoderFactory { PDFRegionDecoder(0, file, 10f) }
                                     setImage(ImageSource.uri(file.absolutePath))
                                 }
-                                activity?.loadingIndicator?.visibility = View.GONE
+                                mapLoadingIndicator?.visibility = View.GONE
                             }
                         }
 
@@ -111,4 +110,19 @@ fun setStatusBarColors(activity: Activity, light: Boolean = true){
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         activity.window.decorView.systemUiVisibility = if(light) View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR else 0
     }
+}
+
+fun openMapView(id: Int, context: Context){
+    val activity = context as FragmentActivity
+    val ft = activity.supportFragmentManager.beginTransaction()
+    ft.addToBackStack("mapView")
+    ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+
+    val fragment = MapViewFragment()
+    val bundle = Bundle()
+    bundle.putInt("mapKey", id)
+    fragment.arguments = bundle
+
+    ft.add(R.id.mapViewHolder, fragment)
+    ft.commit()
 }

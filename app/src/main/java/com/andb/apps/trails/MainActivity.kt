@@ -1,6 +1,7 @@
 package com.andb.apps.trails
 
 import android.app.ProgressDialog
+import android.content.Intent
 import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Build
@@ -32,6 +33,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.explore_layout.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : AppCompatActivity() {
 
@@ -92,34 +96,13 @@ class MainActivity : AppCompatActivity() {
     lateinit var dialog: ProgressDialog
     suspend fun setupData(pager: ViewPager){
 
-
-        if(!Once.beenDone("regionSetup")){
+        if(!Once.beenDone(TAG_REGION_SETUP) && !Once.beenDone(TAG_AREA_SETUP)){
             withContext(Dispatchers.Main) {
-                dialog = ProgressDialog.show(this@MainActivity, getString(R.string.download_progress_title), getString(R.string.download_progress_desc), true, false)
+                dialog = ProgressDialog.show(this@MainActivity, notifTitle(this@MainActivity, 0), getString(R.string.download_progress_desc), false, false)
             }
 
-            Log.d("regionSetup", "Setting up regions")
-            val regionsSet = setupRegions()
-            if(regionsSet){
-                Once.markDone("regionSetup")
-            }
-            val areasSet = updateAreas()
-
-            dialog.cancel()
-
-            if(!areasSet || !regionsSet){
-                AlertDialog.Builder(this).setTitle(R.string.download_progress_failed).setPositiveButton(R.string.download_progress_try_again){ dlg, _ ->
-                    dlg.cancel()
-                    CoroutineScope(Dispatchers.IO).launch {
-                        setupData(pager)
-                    }
-                }
-            }
-
-
-        }
-
-        withContext(Dispatchers.Main){
+            startService(Intent(this, InitialDownloadService::class.java))
+        }else{
             pager.adapter = SectionsPagerAdapter(supportFragmentManager)
         }
     }
@@ -135,7 +118,6 @@ class MainActivity : AppCompatActivity() {
                 AsyncTask.execute {
                     Log.d("dbCount", "Join Count: ${regionAreaDao().getSize()}")
                     Log.d("dbCount", "Area Count: ${areasDao().getSize()}")
-
                 }
                 return true
             }
@@ -150,11 +132,52 @@ class MainActivity : AppCompatActivity() {
         } else if (RegionList.backStack.size > 1 && pager.currentItem == 1) {
             RegionList.drop()
             exploreFragment.exploreAdapter.notifyDataSetChanged()
+            exploreRegionRecycler.scrollToPosition(0)
             exploreRegionRecycler.scheduleLayoutAnimation()
         } else {
             super.onBackPressed()
         }
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun downloadCallback(event: DownloadEvent){
+        when(event.status){
+            -1->{
+                dialog.progress = event.progress
+            }
+            DOWNLOADING_REGIONS->{
+                dialog.setTitle(notifTitle(this, event.status))
+                dialog.progress = event.progress
+            }
+            DOWNLOADING_AREAS->{
+                dialog.setTitle(notifTitle(this, event.status))
+                dialog.progress = event.progress
+            }
+            DOWNLOADING_SUCEEDED->{
+                dialog.cancel()
+                pager.adapter = SectionsPagerAdapter(supportFragmentManager)
+            }
+            DOWNLOADING_FAILED->{
+                dialog.cancel()
+                AlertDialog.Builder(this).setTitle(R.string.download_progress_failed).setPositiveButton(R.string.download_progress_try_again){ dlg, _ ->
+                    dlg.cancel()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        setupData(pager)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
     }
 
 
