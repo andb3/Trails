@@ -56,6 +56,10 @@ class SearchFragment : Fragment() {
             override fun afterTextChanged(s: Editable) {}
         })
 
+        searchClear.setOnClickListener {
+            searchInput.setText("")
+        }
+
     }
 
     fun searchAdapter() = Klaster.get()
