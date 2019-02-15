@@ -7,9 +7,11 @@ import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
 import android.transition.Visibility
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
@@ -31,7 +33,7 @@ import kotlinx.coroutines.android.Main
 class AreaViewFragment : Fragment() {
 
     lateinit var skiArea: SkiArea
-    lateinit var mapAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+    val mapAdapter by lazy { mapAdapter() }
     var areaKey = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +52,16 @@ class AreaViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mapListRecycler.layoutManager = GridLayoutManager(context, 2)
+        areaNested.apply {
+            setOnScrollChangeListener { v: NestedScrollView?, scrollX: Int, scrollY: Int, oldScrollX: Int, oldScrollY: Int ->
+                Log.d("areaRecycler", "scrolled")
+                if (scrollY > oldScrollY) {
+                    areaViewFab.hide()
+                } else {
+                    areaViewFab.show()
+                }
+            }
+        }
         setupFab()
 
         loadArea(areaKey)
@@ -59,7 +71,6 @@ class AreaViewFragment : Fragment() {
         areaViewFab.apply {
             imageTintList = ColorStateList.valueOf(Color.WHITE)
             setOnClickListener {
-                //TransitionManager.beginDelayedTransition(areaLayout, ChangeBounds())
                 val translated = areaInfoCard.translationY != 0f
                 val translateCard: Float
                 val translateFab: Float
@@ -103,7 +114,6 @@ class AreaViewFragment : Fragment() {
                     Utils.showIfAvailible(openingYear, areaOpeningYear, R.string.area_opening_year_text)
                     Utils.showIfAvailible(website, areaWebsite, R.string.area_website_text)
                 }
-                mapAdapter = mapAdapter()
                 mapListRecycler.adapter = mapAdapter
             }
             val recieved = AreaXMLParser.parseFull(id, skiArea)

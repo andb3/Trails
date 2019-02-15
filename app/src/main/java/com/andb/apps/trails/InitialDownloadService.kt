@@ -112,6 +112,7 @@ class InitialDownloadService : Service() {
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setProgress(maxItems, itemCount, false)
             .setContentIntent(pendingIntent)
+            .setOnlyAlertOnce(true)
 
 
         val notification = notificationBuilder.build()
@@ -125,6 +126,7 @@ class InitialDownloadService : Service() {
 
     fun updateProgress(amount: Int = 1) {
         itemCount += amount
+        Log.d("updatingProgress", "itemCount: $itemCount")
         notificationBuilder.setProgress(maxItems, itemCount, false)
         updateNotification()
         EventBus.getDefault().post(DownloadEvent(progress = progress()))

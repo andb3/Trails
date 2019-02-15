@@ -43,7 +43,7 @@ const val EXPLORE_REGION_ITEM_TYPE = 34987
 
 class ExploreFragment : Fragment() {
 
-    lateinit var exploreAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+    val exploreAdapter by lazy { exploreAdapter() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,7 +76,6 @@ class ExploreFragment : Fragment() {
             }
             withContext(Dispatchers.Main) {
                 if (start) {
-                    exploreAdapter = exploreAdapter()
                     exploreRegionRecycler.layoutManager = LinearLayoutManager(context)
                     exploreRegionRecycler.adapter = exploreAdapter
                 } else {

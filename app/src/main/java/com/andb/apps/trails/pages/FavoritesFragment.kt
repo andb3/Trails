@@ -27,7 +27,7 @@ const val AREA_ITEM_TYPE = 98123
 
 class FavoritesFragment : Fragment() {
 
-    lateinit var favoritesAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+    val favoritesAdapter by lazy { favoritesAdapter() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,7 +40,6 @@ class FavoritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        favoritesAdapter = favoritesAdapter()
         val gridLinearManager = GridLayoutManager(context, 2)
         gridLinearManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {

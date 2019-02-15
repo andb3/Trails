@@ -16,6 +16,7 @@ import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 import java.io.StringWriter
+import java.lang.Exception
 import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
@@ -47,6 +48,7 @@ object AreaXMLParser {
                 val id = node.getAttribute("id").toInt()
                 val baseArea = parseBase(id)
 
+                service.updateProgress()
                 val saveJob = CoroutineScope(Dispatchers.IO).launch {
                     if (areasDao().getAreasById(baseArea.id).isEmpty()) {
                         areasDao().insertArea(baseArea)
@@ -66,19 +68,18 @@ object AreaXMLParser {
                             Log.d("updatingJoin", "Updating")
                             regionAreaDao().update(regionAreaJoin)
                         }
-
+                        service.updateProgress()
                     }
                 }
                 saveJobs.add(saveJob)
 
             }
             jobs.add(job)
-            service.updateProgress()
+
 
         }
         jobs.forEach {
             it.join()
-            service.updateProgress()
         }
         saveJobs.forEach {
             it.join()
@@ -177,7 +178,14 @@ object AreaXMLParser {
         val dbf = DocumentBuilderFactory.newInstance()
         val db = dbf.newDocumentBuilder()
         val doc = db.parse(InputSource(url.openStream()))
-        doc.documentElement.normalize()
+        try {
+            doc.documentElement.normalize()
+        }catch (e: Exception){
+            Log.e("areaParseFail","failed for area $areaId")
+            //e.printStackTrace()
+            throw e
+        }
+
         Log.d("getNode", doc.toXMLString())
 
         val nodeList = doc.getElementsByTagName("skiArea")

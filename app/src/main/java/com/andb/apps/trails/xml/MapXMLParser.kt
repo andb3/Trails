@@ -59,7 +59,7 @@ object MapXMLParser {
             doc.documentElement.normalize()
         } catch (e: Exception) {
             Log.d("noImageAvailible", "ID: $mapId")
-            e.printStackTrace()
+            //e.printStackTrace()
             return null
         }
 
