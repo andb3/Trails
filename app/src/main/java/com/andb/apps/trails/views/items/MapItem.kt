@@ -1,12 +1,9 @@
 package com.andb.apps.trails.views.items
 
 import android.content.Context
-import android.os.Bundle
 import android.util.AttributeSet
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.fragment.app.FragmentActivity
-import com.andb.apps.trails.MapViewFragment
 import com.andb.apps.trails.R
 import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.SkiMap

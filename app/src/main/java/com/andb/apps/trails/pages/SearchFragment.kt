@@ -7,19 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.andb.apps.trails.AreaViewFragment
-import com.andb.apps.trails.MapViewFragment
 import com.andb.apps.trails.R
 import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.BaseSkiArea
-import com.andb.apps.trails.utils.Utils
 import com.andb.apps.trails.views.items.AreaItem
-import com.andb.apps.trails.xml.AreaXMLParser
 import com.github.rongi.klaster.Klaster
-import kotlinx.android.synthetic.main.favorites_area_item.*
 import kotlinx.android.synthetic.main.search_layout.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
@@ -62,7 +55,7 @@ class SearchFragment : Fragment() {
 
     }
 
-    fun searchAdapter() = Klaster.get()
+    private fun searchAdapter() = Klaster.get()
         .itemCount { list.size }
         .view { _, _ ->
             AreaItem(context?: this.requireContext()).also {

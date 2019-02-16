@@ -1,4 +1,4 @@
-package com.andb.apps.trails
+package com.andb.apps.trails.download
 
 import android.app.*
 import android.content.Context
@@ -7,9 +7,8 @@ import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import com.andb.apps.trails.download.PARENT_REGIONS
-import com.andb.apps.trails.download.setupRegions
-import com.andb.apps.trails.download.updateAreas
+import com.andb.apps.trails.MainActivity
+import com.andb.apps.trails.R
 import com.andb.apps.trails.xml.AreaXMLParser
 import jonathanfinerty.once.Once
 import kotlinx.coroutines.CoroutineScope
@@ -26,12 +25,12 @@ const val TAG_AREA_SETUP = "areaSetup"
 
 const val DOWNLOADING_REGIONS = 0
 const val DOWNLOADING_AREAS = 1
-const val DOWNLOADING_SUCEEDED = 2
+const val DOWNLOADING_SUCCEEDED = 2
 const val DOWNLOADING_FAILED = 3
 
 
 class InitialDownloadService : Service() {
-    var maxItems: Int = PARENT_REGIONS
+    private var maxItems: Int = PARENT_REGIONS
     private var itemCount = 0
     private var stage: Int = 0
     private lateinit var notificationBuilder: Notification.Builder
@@ -50,7 +49,7 @@ class InitialDownloadService : Service() {
 
     }
 
-    suspend fun startDownload() {
+    private suspend fun startDownload() {
         createNotification()
         val regionsDownloaded = if(!Once.beenDone(TAG_REGION_SETUP)) downloadRegions() else true
         if (regionsDownloaded) {
@@ -60,13 +59,13 @@ class InitialDownloadService : Service() {
 
             if (areasDownloaded) {
                 Once.markDone(TAG_AREA_SETUP)
-                updateStage(3)
+                updateStage(DOWNLOADING_SUCCEEDED)
             }else{
-                updateStage(4)
+                updateStage(DOWNLOADING_FAILED)
             }
 
         } else {
-            updateStage(4)
+            updateStage(DOWNLOADING_FAILED)
         }
     }
 
@@ -82,7 +81,7 @@ class InitialDownloadService : Service() {
 
 
     //***********Notification Creation*****************//
-    fun createNotification() {
+    private fun createNotification() {
 
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
@@ -115,13 +114,31 @@ class InitialDownloadService : Service() {
             .setOnlyAlertOnce(true)
 
 
+
         val notification = notificationBuilder.build()
         updateNotification()
         startForeground(NOTIFICATION_ID, notification)
     }
 
-    fun updateNotification() {
-        notifManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+    private fun updateNotification() {
+        Log.d("updateNotification", "updating to stage $stage")
+        val notification: Notification
+        val id: Int
+        when(stage) {
+            2, 3 -> {
+                Log.d("updateNotification", "cancelling and re-adding")
+                notifManager.cancel(NOTIFICATION_ID)
+                notificationBuilder.setProgress(0, 0, false).setAutoCancel(true)
+                notification = notificationBuilder.build().also { stopForeground(true) }
+                id = NOTIFICATION_ID + stage
+            }
+            else -> {
+                Log.d("updateNotification", "updating")
+                id = NOTIFICATION_ID
+                notification = notificationBuilder.build()
+            }
+        }
+        notifManager.notify(id, notification)
     }
 
     fun updateProgress(amount: Int = 1) {
@@ -135,14 +152,15 @@ class InitialDownloadService : Service() {
     private fun progress(): Int = (itemCount.toFloat() / maxItems).toInt() * 100
 
 
-    fun nextStage(items: Int) {
+    private fun nextStage(items: Int) {
         stage++
         maxItems = items
         updateStage()
     }
 
-    fun updateStage(stage: Int = this.stage) {
-        this.stage = stage
+    private fun updateStage(newStage: Int = this.stage) {
+        this.stage = newStage
+        Log.d("updateStage","updating to stage $stage: ${descFromStage(this, stage)}")
         itemCount = 0
         val newTitle = notifTitle(this, stage)
         Log.d("newTitle", newTitle)
@@ -167,7 +185,7 @@ class InitialDownloadService : Service() {
         DOWNLOADING_AREAS -> {
             context.getString(R.string.download_progress_areas)
         }
-        DOWNLOADING_SUCEEDED -> {
+        DOWNLOADING_SUCCEEDED -> {
             context.getString(R.string.download_progress_complete)
         }
         else -> {

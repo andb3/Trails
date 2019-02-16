@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginBottom="48dp"
     android:orientation="vertical">
 
@@ -13,7 +14,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="48dp"
         android:layout_marginEnd="8dp"
-        android:text="Region Name"
+        tools:text="Region Name"
         android:textAlignment="center"
         android:textAllCaps="true"
         android:textColor="@android:color/black"

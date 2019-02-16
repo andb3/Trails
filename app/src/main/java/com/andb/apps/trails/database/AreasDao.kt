@@ -2,8 +2,6 @@ package com.andb.apps.trails.database
 
 import androidx.room.*
 import com.andb.apps.trails.objects.BaseSkiArea
-import androidx.lifecycle.LiveData
-
 
 
 @Dao

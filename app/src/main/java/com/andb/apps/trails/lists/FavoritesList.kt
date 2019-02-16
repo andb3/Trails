@@ -10,7 +10,7 @@ import com.andb.apps.trails.objects.SkiMap
 object FavoritesList {
     val favoriteMaps = ArrayList<SkiMap>()
     val favoriteAreas = ArrayList<BaseSkiArea>()
-    lateinit var adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
+    private lateinit var adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     fun init(adapter: RecyclerView.Adapter<RecyclerView.ViewHolder>) {
         this.adapter = adapter

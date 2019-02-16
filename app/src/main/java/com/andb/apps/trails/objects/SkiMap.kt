@@ -14,9 +14,6 @@ class SkiMap(
     //val artist: MapArtist
 ) {
 
-    @Ignore
-    var loaded = false
-
     constructor(baseMap: BaseSkiMap, imageUrl: String):this(baseMap.id, baseMap.skiArea, imageUrl, baseMap.year)
 
     fun isPdf(): Boolean{

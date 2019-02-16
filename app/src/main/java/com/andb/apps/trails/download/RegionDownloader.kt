@@ -1,7 +1,5 @@
 package com.andb.apps.trails.download
 
-import android.util.Log
-import com.andb.apps.trails.InitialDownloadService
 import com.andb.apps.trails.xml.RegionXMLParser
 import kotlinx.coroutines.*
 

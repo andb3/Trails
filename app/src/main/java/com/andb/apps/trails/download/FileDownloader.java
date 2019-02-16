@@ -1,6 +1,5 @@
 package com.andb.apps.trails.download;
 
-import android.os.AsyncTask;
 import android.os.Environment;
 
 import java.io.File;

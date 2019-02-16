@@ -5,13 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.andb.apps.trails.AreaViewFragment
 import com.andb.apps.trails.R
 import com.andb.apps.trails.lists.FavoritesList
-import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.views.items.AreaItem
 import com.andb.apps.trails.views.items.MapItem
 import com.github.rongi.klaster.Klaster
@@ -64,7 +60,7 @@ class FavoritesFragment : Fragment() {
         }
     }
 
-    fun favoritesAdapter() = Klaster.get()
+    private fun favoritesAdapter() = Klaster.get()
         .itemCount { FavoritesList.count() }
         .view { viewType, parent ->
             when (viewType) {

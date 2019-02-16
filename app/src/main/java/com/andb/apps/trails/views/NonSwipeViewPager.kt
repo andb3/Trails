@@ -9,7 +9,7 @@ import com.andb.apps.trails.R
 
 class NonSwipeViewPager(context: Context, attrs: AttributeSet) : ViewPager(context, attrs) {
 
-    var swipeLocked: Boolean = true
+    private var swipeLocked: Boolean = true
 
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.NonSwipeViewPager, 0, 0)

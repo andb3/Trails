@@ -1,6 +1,5 @@
 package com.andb.apps.trails.lists
 
-import com.andb.apps.trails.database.Database
 import com.andb.apps.trails.database.regionsDao
 import com.andb.apps.trails.objects.SkiRegion
 

@@ -1,15 +1,15 @@
 package com.andb.apps.trails.xml
 
-import android.content.Context
-import android.graphics.drawable.Drawable
 import android.util.Log
 import com.andb.apps.trails.download.FileDownloader
 import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.objects.BaseSkiMap
 import com.andb.apps.trails.objects.MapArtist
 import com.andb.apps.trails.objects.SkiMap
-import com.andb.apps.trails.utils.makeMapService
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
 import java.net.URL
@@ -25,9 +25,6 @@ object MapXMLParser {
         Log.d("map xml parsed", "Image URL: $imageUrl")
 
 
-        if (isPdf(imageUrl)) {
-            preloadPDF(imageUrl)
-        }
 
         val map = SkiMap(baseMap, imageUrl)
         Log.d("map xml parsing success", map.toString())
@@ -58,7 +55,7 @@ object MapXMLParser {
         try {
             doc.documentElement.normalize()
         } catch (e: Exception) {
-            Log.d("noImageAvailible", "ID: $mapId")
+            Log.d("noImageAvailable", "ID: $mapId")
             //e.printStackTrace()
             return null
         }
@@ -99,7 +96,7 @@ object MapXMLParser {
         }
     }
 
-    fun parseThumbnails(element: Element, size: Int = 100): String{
+    private fun parseThumbnails(element: Element, size: Int = 100): String{
         val imageTags = element.getElementsByTagName("thumbnail")
         var imageWidth = 1000
         var imageUrl = ""
@@ -125,22 +122,13 @@ object MapXMLParser {
         return imageTag.getAttribute("url")
     }
 
-
-    private fun preloadPDF(url: String){
-        val filename = filenameFromURL(url)
-        CoroutineScope(Dispatchers.IO).launch {
-            CoroutineScope(Dispatchers.IO).launch {
-                FileDownloader.downloadFile(url, filename)
-            }
-        }
-    }
+}
 
 
-    fun filenameFromURL(url: String): String{
-        return url.drop("https://skimap.org/data/".length).replace('/', '.')
-    }
+fun filenameFromURL(url: String): String{
+    return url.drop("https://skimap.org/data/".length).replace('/', '.')
+}
 
-    fun isPdf(url: String): Boolean{
-        return url.takeLast(4) == ".pdf"
-    }
+private fun isPdf(url: String): Boolean{
+    return url.takeLast(4) == ".pdf"
 }

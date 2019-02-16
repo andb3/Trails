@@ -7,33 +7,19 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.andb.apps.trails.AreaViewFragment
 import com.andb.apps.trails.R
-import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.lists.RegionList
-import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.objects.SkiRegion
 import com.andb.apps.trails.openAreaView
 import com.andb.apps.trails.utils.Utils
-import com.andb.apps.trails.utils.dpToPx
-import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.views.items.AreaItem
-import com.bumptech.glide.ListPreloader
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.util.ViewPreloadSizeProvider
 import com.github.rongi.klaster.Klaster
 import com.google.android.material.chip.Chip
-import com.like.LikeButton
-import com.like.OnLikeListener
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.explore_header.*
-import kotlinx.android.synthetic.main.area_item.*
-import kotlinx.android.synthetic.main.region_item.*
 import kotlinx.android.synthetic.main.explore_layout.*
+import kotlinx.android.synthetic.main.region_item.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
 
@@ -113,7 +99,7 @@ class ExploreFragment : Fragment() {
                     EXPLORE_REGION_ITEM_TYPE->{
                         val region = children[position-1]
                         regionName.text = region.name
-                        Utils.showIfAvailible(region.mapCount, regionMaps, R.string.map_count)
+                        Utils.showIfAvailable(region.mapCount, regionMaps, R.string.map_count)
                         chipChild(0, region, regionChildrenChip1)
                         chipChild(1, region, regionChildrenChip2)
                         itemView.setOnClickListener {
@@ -162,7 +148,7 @@ class ExploreFragment : Fragment() {
 
 
 
-    fun nextRegion(region: SkiRegion) {
+    private fun nextRegion(region: SkiRegion) {
         RegionList.backStack.add(region)
         exploreAdapter.notifyDataSetChanged()
         exploreRegionRecycler.scrollToPosition(0)

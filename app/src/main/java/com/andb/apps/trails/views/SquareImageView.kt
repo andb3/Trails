@@ -2,10 +2,9 @@ package com.andb.apps.trails.views
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
-import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatImageView
 
-class SquareImageView : ImageView {
+class SquareImageView : AppCompatImageView {
 
     // Inherited constructors
 

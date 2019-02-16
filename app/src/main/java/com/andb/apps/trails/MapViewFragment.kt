@@ -12,25 +12,19 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import com.andb.apps.trails.download.FileDownloader
-import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.xml.MapXMLParser
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.Request
-import com.bumptech.glide.request.target.*
-import com.bumptech.glide.request.target.Target
+import com.andb.apps.trails.xml.filenameFromURL
+import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import de.number42.subsampling_pdf_decoder.PDFDecoder
 import de.number42.subsampling_pdf_decoder.PDFRegionDecoder
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.map_view.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
@@ -38,7 +32,7 @@ import kotlinx.coroutines.android.Main
 class MapViewFragment : Fragment() {
 
     var map: SkiMap? = null
-    var mapKey = -1
+    private var mapKey = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +78,7 @@ class MapViewFragment : Fragment() {
 
                     } else {
                         CoroutineScope(Dispatchers.IO).launch {
-                            val file = FileDownloader.downloadFile(imageUrl, MapXMLParser.filenameFromURL(imageUrl))
+                            val file = FileDownloader.downloadFile(imageUrl, filenameFromURL(imageUrl))
                             withContext(Dispatchers.Main) {
                                 mapImageView?.apply {
                                     setMinimumTileDpi(120)

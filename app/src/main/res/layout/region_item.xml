@@ -51,11 +51,12 @@
             android:id="@+id/regionChildrenChip1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right|center_vertical"
+            android:layout_gravity="end|center_vertical"
             android:layout_marginBottom="-8dp"
             android:clickable="true"
+            android:focusable="true"
             android:ellipsize="end"
-            android:text="Child Chip Long"
+            tools:text="Child Chip Long"
             app:chipBackgroundColor="@android:color/transparent"
             app:chipStrokeColor="@color/colorAccent"
             app:chipStrokeWidth="1dp" />
@@ -64,13 +65,14 @@
             android:id="@+id/regionChildrenChip2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right|center_vertical"
+            android:layout_gravity="end|center_vertical"
             android:clickable="true"
             android:ellipsize="end"
-            android:text="Child"
+            tools:text="Child"
             app:chipBackgroundColor="@android:color/transparent"
             app:chipStrokeColor="@color/colorAccent"
-            app:chipStrokeWidth="1dp" />
+            app:chipStrokeWidth="1dp"
+            android:focusable="true" />
     </LinearLayout>
 
     <androidx.constraintlayout.widget.Barrier

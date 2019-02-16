@@ -2,14 +2,11 @@ package com.andb.apps.trails
 
 import android.app.ProgressDialog
 import android.content.Intent
-import android.graphics.Color
 import android.os.AsyncTask
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -17,12 +14,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.database.db
 import com.andb.apps.trails.database.regionAreaDao
-import com.andb.apps.trails.download.setupRegions
-import com.andb.apps.trails.download.updateAreas
+import com.andb.apps.trails.download.*
 import com.andb.apps.trails.lists.AreaList
-import com.andb.apps.trails.lists.FavoritesList
 import com.andb.apps.trails.lists.RegionList
 import com.andb.apps.trails.pages.ExploreFragment
 import com.andb.apps.trails.pages.FavoritesFragment
@@ -40,8 +34,8 @@ import org.greenrobot.eventbus.ThreadMode
 class MainActivity : AppCompatActivity() {
 
     val favoritesFragment by lazy { FavoritesFragment() }
-    val exploreFragment  by lazy { ExploreFragment() }
-    val searchFragment  by lazy { SearchFragment() }
+    val exploreFragment by lazy { ExploreFragment() }
+    val searchFragment by lazy { SearchFragment() }
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
@@ -93,18 +87,22 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    lateinit var dialog: ProgressDialog
-    suspend fun setupData(pager: ViewPager){
+    private lateinit var dialog: ProgressDialog
+    private suspend fun setupData(pager: ViewPager) {
 
-        if(!Once.beenDone(TAG_REGION_SETUP) && !Once.beenDone(TAG_AREA_SETUP)){
+        if (!Once.beenDone(TAG_REGION_SETUP) && !Once.beenDone(TAG_AREA_SETUP)) {
             withContext(Dispatchers.Main) {
                 dialog = ProgressDialog.show(this@MainActivity, notifTitle(this@MainActivity, 0), getString(R.string.download_progress_desc), false, false)
             }
 
             startService(Intent(this, InitialDownloadService::class.java))
-        }else{
-            pager.adapter = SectionsPagerAdapter(supportFragmentManager)
+        } else {
+            setAdapter(pager)
         }
+    }
+
+    fun setAdapter(pager: ViewPager) {
+        pager.adapter = SectionsPagerAdapter(supportFragmentManager)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -141,31 +139,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun downloadCallback(event: DownloadEvent){
-        when(event.status){
-            -1->{
+    fun downloadCallback(event: DownloadEvent) {
+        when (event.status) {
+            -1 -> {
                 dialog.progress = event.progress
             }
-            DOWNLOADING_REGIONS->{
+            DOWNLOADING_REGIONS -> {
                 dialog.setTitle(notifTitle(this, event.status))
                 dialog.progress = event.progress
             }
-            DOWNLOADING_AREAS->{
+            DOWNLOADING_AREAS -> {
                 dialog.setTitle(notifTitle(this, event.status))
                 dialog.progress = event.progress
             }
-            DOWNLOADING_SUCEEDED->{
+            DOWNLOADING_SUCCEEDED -> {
                 dialog.cancel()
                 pager.adapter = SectionsPagerAdapter(supportFragmentManager)
             }
-            DOWNLOADING_FAILED->{
+            DOWNLOADING_FAILED -> {
                 dialog.cancel()
-                AlertDialog.Builder(this).setTitle(R.string.download_progress_failed).setPositiveButton(R.string.download_progress_try_again){ dlg, _ ->
-                    dlg.cancel()
-                    CoroutineScope(Dispatchers.IO).launch {
-                        setupData(pager)
+                AlertDialog.Builder(this).setTitle(R.string.download_progress_failed)
+                    .setPositiveButton(R.string.download_progress_try_again) { dlg, _ ->
+                        dlg.cancel()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            setupData(pager)
+                        }
                     }
-                }
             }
         }
     }
@@ -173,6 +172,14 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::dialog.isInitialized && dialog.isShowing && Once.beenDone(TAG_REGION_SETUP) && Once.beenDone(TAG_AREA_SETUP)){//if
+            dialog.cancel()
+            setAdapter(pager)
+        }
     }
 
     override fun onStop() {

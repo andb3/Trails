@@ -1,7 +1,6 @@
 package com.andb.apps.trails.xml
 
 import android.util.Log
-import com.andb.apps.trails.database.Database
 import com.andb.apps.trails.database.regionsDao
 import com.andb.apps.trails.objects.BaseSkiRegion
 import kotlinx.coroutines.*
@@ -18,7 +17,7 @@ object RegionXMLParser {
     }
 
 
-    suspend fun parse(regionId: Int, parentId: Int?): BaseSkiRegion {
+    private suspend fun parse(regionId: Int, parentId: Int?): BaseSkiRegion {
         Log.d("regionDownload", "Downloading $regionId")
         Log.d("region xml parseFull", "parsing")
 
@@ -55,7 +54,7 @@ object RegionXMLParser {
         return baseRegion
     }
 
-    fun parseBase(node: Element, parentId: Int?): BaseSkiRegion {
+    private fun parseBase(node: Element, parentId: Int?): BaseSkiRegion {
         Log.d("base xml parseFull", "parsing")
 
         val id = node.getAttribute("id").toInt()
@@ -73,7 +72,7 @@ object RegionXMLParser {
 
     }
 
-    fun getNode(regionId: Int): Element {
+    private fun getNode(regionId: Int): Element {
         val url = URL("https://skimap.org/Regions/view/$regionId.xml")
         val dbf = DocumentBuilderFactory.newInstance()
         val db = dbf.newDocumentBuilder()

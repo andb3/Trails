@@ -1,8 +1,7 @@
 package com.andb.apps.trails.xml
 
-import android.os.AsyncTask
 import android.util.Log
-import com.andb.apps.trails.InitialDownloadService
+import com.andb.apps.trails.download.InitialDownloadService
 import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.database.regionAreaDao
 import com.andb.apps.trails.objects.BaseSkiArea
@@ -16,7 +15,6 @@ import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 import java.io.StringWriter
-import java.lang.Exception
 import java.net.URL
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
@@ -104,8 +102,7 @@ object AreaXMLParser {
         for (m in 0 until skiAreaMaps.length) {
             val job = CoroutineScope(Dispatchers.IO).async {
                 val mapTag = skiAreaMaps.item(m) as Element
-                val map = MapXMLParser.parseThumbnail(mapTag.getAttribute("id").toInt())
-                return@async map
+                return@async MapXMLParser.parseThumbnail(mapTag.getAttribute("id").toInt())
             }
             jobs.add(job)
         }
@@ -125,7 +122,7 @@ object AreaXMLParser {
 
     }
 
-    fun parseBase(areaId: Int): BaseSkiArea {
+    private fun parseBase(areaId: Int): BaseSkiArea {
         return parseBase(getNode(areaId))
     }
 
@@ -192,7 +189,7 @@ object AreaXMLParser {
         return nodeList.item(0) as Element
     }
 
-    fun Document.toXMLString(): String {
+    private fun Document.toXMLString(): String {
         val tf = TransformerFactory.newInstance()
         val transformer = tf.newTransformer()
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
@@ -235,7 +232,7 @@ object AreaXMLParser {
         return regions
     }
 
-    fun parseMaps(element: Element, max: Int = -1): Pair<Int, ArrayList<Int>> {
+    private fun parseMaps(element: Element, max: Int = -1): Pair<Int, ArrayList<Int>> {
         Log.d("area xml parsed", "map parse started, content: ${(element.getElementsByTagName("skiMaps").item(0) as Element).childNodes.length}")
         val skiAreaMaps = element.getElementsByTagName("skiMap")
         Log.d("area xml parsed", "map parse element")

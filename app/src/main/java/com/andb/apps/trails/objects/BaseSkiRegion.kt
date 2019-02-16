@@ -18,5 +18,4 @@ open class BaseSkiRegion(
     @ColumnInfo(name = "regionParentId")
     @Nullable
     val parentId: Int?
-) {
-}
+)
