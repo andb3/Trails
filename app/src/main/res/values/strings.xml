@@ -33,6 +33,10 @@
     <string name="download_progress_regions">Downloading Regions</string>
     <string name="download_progress_areas">Downloading Areas</string>
     <string name="area_info_card_title">Info</string>
+    <string name="offline_error_title">Offline</string>
+    <string name="offline_error_desc">Any areas, regions, or maps you\'ve viewed will be available offline</string>
+    <string name="offline_error_refresh">Refresh</string>
+
 
 
 </resources>

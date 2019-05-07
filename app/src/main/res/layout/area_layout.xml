@@ -57,19 +57,31 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/mapListRecycler"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="16dp"
+                android:layoutAnimation="@anim/rv_slide_from_bottom_layout_anim"
+                android:nestedScrollingEnabled="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/areaViewName"
-                android:nestedScrollingEnabled="true">
+                app:layout_constraintTop_toBottomOf="@+id/areaViewName">
 
             </androidx.recyclerview.widget.RecyclerView>
+
+            <include
+                android:id="@+id/areaOfflineItem"
+                android:visibility="gone"
+                layout="@layout/offline_item"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|center_vertical" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+
 
     <androidx.cardview.widget.CardView
         android:id="@+id/areaInfoCard"

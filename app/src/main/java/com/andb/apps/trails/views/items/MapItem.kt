@@ -5,9 +5,11 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.andb.apps.trails.R
-import com.andb.apps.trails.lists.FavoritesList
+import com.andb.apps.trails.database.mapsDao
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.openMapView
+import com.andb.apps.trails.repository.AreasRepo
+import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.xml.MapXMLParser
@@ -26,14 +28,14 @@ class MapItem : ConstraintLayout {
         inflate(context, R.layout.map_item, this)
     }
 
-    fun setup(map: SkiMap, favorite: Boolean = false) {
+    fun setup(map: SkiMap, areaName: String, favorite: Boolean = false) {
         GlideApp.with(this)
-            .load(map.imageUrl)
+            .load(map.thumbnails.first().url)
             .fitCenter()
             .into(mapListItemImage)
         mapFavoritesAreaName.apply {
             if (favorite) {
-                text = map.skiArea.name
+                text = areaName
                 visibility = View.VISIBLE
             } else {
                 visibility = View.GONE
@@ -42,33 +44,20 @@ class MapItem : ConstraintLayout {
         }
         mapListItemYear.text = map.year.toString()
         setOnClickListener {
-            openMapView(map.id, context)
+            openMapView(map.id, areaName, context)
         }
 
         mapListFavoriteButton.apply {
-            isLiked = FavoritesList.contains(map)
+            isLiked = map.favorite
             setOnLikeListener(object : OnLikeListener {
                 override fun liked(p0: LikeButton?) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val saveMap = MapXMLParser.parseThumbnail(map.id)
-                        if (saveMap != null) {
-                            withContext(Dispatchers.Main) {
-                                FavoritesList.add(saveMap)
-                            }
-                        }
-                    }
+                    map.favorite = true
+                    mapsDao().updateMap(map)
                 }
 
                 override fun unLiked(p0: LikeButton?) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val savedMap = MapXMLParser.parseThumbnail(map.id)
-                        if (savedMap != null) {
-                            withContext(Dispatchers.Main) {
-                                FavoritesList.remove(savedMap)
-                            }
-                        }
-
-                    }
+                    map.favorite = false
+                    mapsDao().updateMap(map)
                 }
             })
         }

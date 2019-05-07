@@ -51,6 +51,7 @@
         android:paddingTop="16dp"
         android:text="@string/map_area_name_placeholder"
         android:textColor="@android:color/white"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/skiMapYear"
         app:layout_constraintStart_toStartOf="parent" />
 

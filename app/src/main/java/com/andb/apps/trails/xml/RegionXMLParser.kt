@@ -1,74 +1,94 @@
 package com.andb.apps.trails.xml
 
-import android.util.Log
+import android.database.sqlite.SQLiteConstraintException
+import android.util.Log.d
 import com.andb.apps.trails.database.regionsDao
-import com.andb.apps.trails.objects.BaseSkiRegion
-import kotlinx.coroutines.*
+import com.andb.apps.trails.objects.SkiRegion
 import org.w3c.dom.Element
 import org.w3c.dom.Node
+import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
+import java.lang.Exception
 import java.net.URL
+import javax.net.ssl.SSLException
 import javax.xml.parsers.DocumentBuilderFactory
 
 object RegionXMLParser {
 
-    suspend fun parseParent(regionId: Int) {
-        parse(regionId, null)
+
+    fun parseChildren(node: Element): List<Int> {
+        if (node.getElementsByTagName("regions").length > 0) {
+            val childNodes = (node.getElementsByTagName("regions").item(0) as Element).childNodes.toList()
+            return childNodes.filter { it.isElement() }
+                .map { (it as Element).getAttribute("id").toInt() }
+        } else {
+            return listOf()
+        }
     }
 
-
-    private suspend fun parse(regionId: Int, parentId: Int?): BaseSkiRegion {
-        Log.d("regionDownload", "Downloading $regionId")
-        Log.d("region xml parseFull", "parsing")
-
-        //val children = ArrayList<SkiRegion>()
-        //val areas = ArrayList<BaseSkiArea>()
-
-        val node = getNode(regionId)
-
-
-        val baseRegion: BaseSkiRegion = parseBase(node, parentId)
-        regionsDao().insertRegion(baseRegion)
-
-
-        val regionOrAreaChildren = node.getElementsByTagName("regions")
-
-        if (regionOrAreaChildren.length > 0) {
-            val jobs = mutableListOf<Job>()
-
-            val regionChildren = (regionOrAreaChildren.item(0) as Element).childNodes
-            for (r in 0 until regionChildren.length) {
-                val job = CoroutineScope(Dispatchers.IO).launch {
-                    val regionTag = regionChildren.item(r)
-                    if (regionTag.nodeType == Node.ELEMENT_NODE) {
-                        regionTag as Element
-                        parse(regionTag.getAttribute("id").toInt(), baseRegion.id)
-                    }
-                }
-                jobs.add(job)
-            }
-
-            jobs.forEach { it.join() }
+    fun parseAreas(node: Element): List<Int> {
+        if (node.getElementsByTagName("skiAreas").length > 0) {
+            val childNodes = (node.getElementsByTagName("skiAreas").item(0) as Element).childNodes.toList()
+            return childNodes.filter { it.isElement() }
+                .map { (it as Element).getAttribute("id").toInt() }
+        } else {
+            return listOf()
         }
 
-        return baseRegion
     }
 
-    private fun parseBase(node: Element, parentId: Int?): BaseSkiRegion {
-        Log.d("base xml parseFull", "parsing")
+    fun Node.isElement(): Boolean = nodeType == Node.ELEMENT_NODE
+
+/*    fun downloadRegion(regionId: Int): SkiRegion? {
+        try {
+            d("downloadRegion", "downloading region id: $regionId")
+            val region = getRegion(regionId)
+            regionsDao().insertRegion(region)
+            return region
+        } catch (e: SSLException) {
+            d("internetError", e.toString())
+        } catch (e: SQLiteConstraintException) {
+            d("duplicateError", e.toString())
+        }
+        return null
+    }*/
+
+    fun getRegion(regionId: Int): SkiRegion? {
+        try {
+            val node = getNode(regionId)
+            return parse(node)
+        } catch (e: Exception) {
+            d("internetError", e.toString())
+            return null
+        }
+    }
+
+
+    private fun parse(node: Element): SkiRegion {
+        d("base xml parseFull", "parsing")
 
         val id = node.getAttribute("id").toInt()
-        Log.d("region xml parsed", "ID: $id")
+        d("region xml parsed", "ID: $id")
 
         val regionName = node.getElementsByTagName("name").item(0) as Element
         val name = regionName.textContent
-        Log.d("region xml parsed", "Name: $name")
+        d("region xml parsed", "Name: $name")
 
         val regionMaps = node.getElementsByTagName("maps").item(0) as Element
         val mapCount = regionMaps.getAttribute("count").toInt()
-        Log.d("region xml parsed", "SkiMap Count: $mapCount")
+        d("region xml parsed", "SkiMap Count: $mapCount")
 
-        return BaseSkiRegion(id, name, mapCount, parentId)
+        val parentRegions = node.getElementsByTagName("parents").item(0).childNodes.toList()
+        val parentId = parentRegions
+            .filter { it is Element }
+            .map { (it as Element).getAttribute("level").toInt() }
+            .sortedBy { it }
+            .firstOrNull()
+
+        val childRegions = ArrayList(parseChildren(node))
+        val childAreas = ArrayList(parseAreas(node))
+
+        return SkiRegion(id, name, mapCount, childRegions, childAreas, parentId)
 
     }
 
@@ -84,4 +104,14 @@ object RegionXMLParser {
         val nodeList = doc.getElementsByTagName("region")
         return nodeList.item(0) as Element
     }
+
+}
+
+fun NodeList.toList(): List<Node> {
+    val children = ArrayList<Node>()
+    for (c in 0 until length) {
+        val item = item(c)
+        children.add(item)
+    }
+    return children
 }

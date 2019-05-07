@@ -1,83 +1,85 @@
 package com.andb.apps.trails.xml
 
 import android.util.Log
-import com.andb.apps.trails.download.FileDownloader
-import com.andb.apps.trails.objects.BaseSkiArea
-import com.andb.apps.trails.objects.BaseSkiMap
-import com.andb.apps.trails.objects.MapArtist
+import android.util.Log.d
+import com.andb.apps.trails.database.mapsDao
+import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.launch
+import com.andb.apps.trails.objects.Thumbnail
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
 import java.net.URL
+import java.util.*
+import javax.net.ssl.SSLException
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.collections.ArrayList
 
 
 object MapXMLParser {
-    fun parseFull(mapId: Int): SkiMap? {
-        val parent = getNode(mapId) ?: return null
-        val baseMap = parseBase(parent) ?: return null
-
-        val imageUrl = parseImage(parent)
-        Log.d("map xml parsed", "Image URL: $imageUrl")
 
 
+/*    fun downloadMap(mapId: Int): SkiMap?{
+        try {
+            val map = getMap(mapId)
+            mapsDao().insertMap(map)
+            return map
+        }catch (e: SSLException){
+            Log.d("internetError", e.toString())
+        }
+        return null
+    }*/
 
-        val map = SkiMap(baseMap, imageUrl)
-        Log.d("map xml parsing success", map.toString())
-        return map
+    fun getMap(mapId: Int): SkiMap?{
+        try {
+            val node = getNode(mapId)
+            return parse(node)
+        }catch (e: Exception){
+            d("internetError", e.toString())
+            return null
+        }
+
     }
 
-    fun parseThumbnail(mapId: Int, size: Int = 300): SkiMap?{
-        val parent = getNode(mapId) ?: return null
 
-        val startTime = System.currentTimeMillis()
-        val baseMap = parseBase(parent) ?: return null
-
-        val imageUrl = parseThumbnails(parent, size)
-
-        val map = SkiMap(baseMap, imageUrl)
-        Log.d("map xml parsing success", map.toString() + "time: ${(System.currentTimeMillis() - startTime)} ms")
-
-        return map
-    }
-
-    private fun getNode(mapId: Int): Element?{
-        val url = URL("https://skimap.org/SkiMaps/view/$mapId.xml")
+    private fun getNode(mapId: Int): Element{
+        //val url = URL("https://skimap.org/SkiMaps/view/$mapId.xml")
+        //val raw = Scanner(url.openStream(), "UTF-8").useDelimiter("\\A").next()
         val dbf = DocumentBuilderFactory.newInstance()
         val db = dbf.newDocumentBuilder()
-        val doc = db.parse(InputSource(url.openStream()))
-
+        val doc = db.parse("https://skimap.org/SkiMaps/view/$mapId.xml")
+        //d("mapXml", raw)
 
         try {
+            d("noImageAvailible", "mapId: $mapId, doc: ${doc==null}, documentElement: ${doc.documentElement==null}")
             doc.documentElement.normalize()
         } catch (e: Exception) {
             Log.d("noImageAvailable", "ID: $mapId")
-            //e.printStackTrace()
-            return null
+            e.printStackTrace()
         }
 
         val nodeList = doc.getElementsByTagName("skiMap")
         return nodeList.item(0) as Element
     }
 
-    private fun parseBase(parent: Element): BaseSkiMap?{
+    private fun parse(parent: Element): SkiMap{
 
         val id = parent.getAttribute("id").toInt()
-        val area = parseArea(parent)
-        Log.d("map xml parsed", "Area: ${area.name}")
+        val parentId = parseArea(parent)
+        Log.d("map xml parsed", "Area: ${parentId}")
         val year = parseYear(parent)
         Log.d("map xml parsed", "Year: $year")
+        val mainImage = parseImage(parent)
 
-        return BaseSkiMap(id, area, year)
+        val url = mainImage.first
+
+        val thumbnails = parseThumbnails(parent, mainImage.second)
+
+        return SkiMap(id, year, thumbnails, url, parentId)
     }
 
-    private fun parseArea(element: Element):BaseSkiArea{
+    private fun parseArea(element: Element):Int{
         val skiAreaTag = element.getElementsByTagName("skiArea").item(0) as Element
-        return BaseSkiArea(skiAreaTag.getAttribute("id").toInt(), skiAreaTag.textContent)
+        return skiAreaTag.getAttribute("id").toInt()
     }
 
     private fun parseYear(element: Element): Int{
@@ -85,41 +87,42 @@ object MapXMLParser {
         return yearPublishedTag.textContent.toInt()
     }
 
-    private fun parseArtist(element: Element): MapArtist{
-        val artistTag = element.getElementsByTagName("artist").item(0)
-        return if (artistTag as Element? != null) {
-            artistTag as Element
-            MapArtist(artistTag.getAttribute("id").toInt(), artistTag.textContent)
-
-        } else {
-            MapArtist(-1, "")
-        }
-    }
-
-    private fun parseThumbnails(element: Element, size: Int = 100): String{
+    private fun parseThumbnails(element: Element, widthHeightRatio: Float): ArrayList<Thumbnail>{
         val imageTags = element.getElementsByTagName("thumbnail")
-        var imageWidth = 1000
-        var imageUrl = ""
+        val thumbnails = ArrayList<Thumbnail>()
         for (t in 0 until imageTags.length) {
             val skiMapThumbnail = imageTags.item(t) as Element
+
+            val url = skiMapThumbnail.getAttribute("url")
+
             if (skiMapThumbnail.hasAttribute("width")) {
                 val width = skiMapThumbnail.getAttribute("width").toInt()
-                if (width in size..(imageWidth - 1)) {
-                    val tempUrl = skiMapThumbnail.getAttribute("url")
-                    if (!tempUrl.isEmpty()) {
-                        imageWidth = width
-                        imageUrl = tempUrl
-                    }
-                }
+                val height = width / widthHeightRatio
+                thumbnails.add(Thumbnail(width, height.toInt(), url))
+            }else{
+                val height = skiMapThumbnail.getAttribute("height").toInt()
+                val width = height * widthHeightRatio
+                thumbnails.add(Thumbnail(width.toInt(), height, url))
             }
+
         }
-        return imageUrl
+        return thumbnails
     }
 
 
-    private fun parseImage(element: Element): String{
+    private fun parseImage(element: Element): Pair<String, Float>{
         val imageTag: Element = element.getElementsByTagName("unprocessed").item(0) as Element
-        return imageTag.getAttribute("url")
+        val url = imageTag.getAttribute("url")
+        if(imageTag.hasAttribute("width")){
+            val width = imageTag.getAttribute("width").toFloat()//TODO: pdfs have size not w+h
+            val height = imageTag.getAttribute("height").toFloat()
+            return Pair(url, width/height)
+        }else{
+            return Pair(url, (16/9).toFloat())
+        }
+
+
+
     }
 
 }

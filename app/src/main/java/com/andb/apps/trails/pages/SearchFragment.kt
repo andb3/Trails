@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.andb.apps.trails.R
 import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.objects.BaseSkiArea
+import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.views.items.AreaItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.search_layout.*
@@ -19,7 +19,7 @@ import kotlinx.coroutines.android.Main
 
 class SearchFragment : Fragment() {
 
-    var list = ArrayList<BaseSkiArea>()
+    var list = ArrayList<SkiArea>()
     val searchAdapter by lazy { searchAdapter() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

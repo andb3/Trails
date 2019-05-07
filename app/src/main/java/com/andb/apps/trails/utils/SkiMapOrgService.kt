@@ -13,10 +13,10 @@ interface SkiMapOrgService {
     fun getMap(@Path("mapId") mapId: Int): Deferred<Response<SkiMap>>
 
     @GET("/SkiAreas/view/{areaId}.xml")
-    fun getArea(@Path("areaId") areaId: Int): Deferred<Response<BaseSkiArea>>
+    fun getArea(@Path("areaId") areaId: Int): Deferred<Response<SkiArea>>
 
     @GET("/SkiRegions/view/{regionId}.xml")
-    fun getRegion(@Path("regionId") regionId: Int): Deferred<Response<BaseSkiRegion>>
+    fun getRegion(@Path("regionId") regionId: Int): Deferred<Response<SkiRegion>>
 
 
 }
