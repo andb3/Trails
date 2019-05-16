@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.andb.apps.trails.R
 import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
-import com.andb.apps.trails.views.items.AreaItem
+import com.andb.apps.trails.views.AreaItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.search_layout.*
 import kotlinx.coroutines.*
@@ -58,7 +58,7 @@ class SearchFragment : Fragment() {
     private fun searchAdapter() = Klaster.get()
         .itemCount { list.size }
         .view { _, _ ->
-            AreaItem(context?: this.requireContext()).also {
+            AreaItem(context ?: this.requireContext()).also {
                 it.layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT

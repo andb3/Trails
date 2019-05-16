@@ -39,4 +39,3 @@ class SkiAreaDetails(
     val openingYear: Int? = null,
     val website: String? = null
 )
-

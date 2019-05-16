@@ -9,24 +9,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.pages.ExploreFragment
-import com.andb.apps.trails.pages.FavoritesFragment
-import com.andb.apps.trails.pages.SearchFragment
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.repository.RegionsRepo
-import com.andb.apps.trails.utils.dropBy
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.explore_layout.*
 
 class MainActivity : AppCompatActivity() {
 
-    val favoritesFragment by lazy { FavoritesFragment() }
-    val exploreFragment by lazy { ExploreFragment() }
-    val searchFragment by lazy { SearchFragment() }
+    val viewModel by lazy { ViewModelProviders.of(this).get(MainActivityViewModel::class.java) }
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
@@ -37,11 +31,11 @@ class MainActivity : AppCompatActivity() {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
-                0 -> favoritesFragment
+                0 -> viewModel.favoritesFragment
 
-                1 -> exploreFragment
+                1 -> viewModel.exploreFragment
 
-                else -> searchFragment
+                else -> viewModel.searchFragment
             }
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
@@ -57,10 +51,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-/*
+
         RegionsRepo.init(this)
         AreasRepo.init(this)
-        MapsRepo.init(this)*/
+        MapsRepo.init(this)
 
         navigation.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(pager))
         setAdapter(pager)
@@ -69,33 +63,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun setAdapter(pager: ViewPager) {
         pager.adapter = SectionsPagerAdapter(supportFragmentManager)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.overflow, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
-            R.id.test_menu_item -> {
-                AsyncTask.execute {
-                    Log.d("dbCount", "Area Count: ${areasDao().getSize()}")
-                }
-                return true
+        navigation.selectTab(navigation.getTabAt(viewModel.pagerPosition))
+        navigation.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                viewModel.pagerPosition = tab?.position ?: 0
             }
-        }
-        return false
+        })
+
     }
+
 
     override fun onBackPressed() {
 
         setStatusBarColors(this)
         if (supportFragmentManager.backStackEntryCount > 0) {
             super.onBackPressed()
-        } else if (exploreFragment.regionStack.size > 1 && pager.currentItem == 1) {
-            exploreFragment.regionStack.dropBy(1)
-            exploreFragment.backRegion()
+        } else if (viewModel.exploreFragment.viewModel.isBackPossible() && pager.currentItem == 1) {
+            viewModel.exploreFragment.viewModel.backRegion()
         } else {
             super.onBackPressed()
         }

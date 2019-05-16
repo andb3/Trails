@@ -5,13 +5,13 @@ import android.util.Log.d
 import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiAreaDetails
+import com.andb.apps.trails.utils.toList
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
 import java.io.StringWriter
 import java.net.URL
-import javax.net.ssl.SSLException
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -31,22 +31,21 @@ object AreaXMLParser {
         return doc.getElementsByTagName("skiArea")
     }
 
-/*    fun downloadArea(areaId: Int): SkiArea? {
-        try {
-            val area = getArea(areaId)
+    fun downloadArea(areaId: Int): SkiArea? {
+        d("downloadArea", "downloading area id: $areaId")
+        val area = getArea(areaId)
+        if(area!=null){
             areasDao().insertArea(area)
-            return area
-        } catch (e: SSLException) {
-            Log.d("internetError", e.toString())
-            return null
         }
-    }*/
+        return area
 
-    fun getArea(areaId: Int): SkiArea?{
+    }
+
+    private fun getArea(areaId: Int): SkiArea? {
         try {
             val node = getNode(areaId)
             return parse(node)
-        }catch (e: Exception){
+        } catch (e: Exception) {
             d("internetError", e.toString())
             return null
         }
@@ -58,26 +57,26 @@ object AreaXMLParser {
 
         val id: Int = node.getAttribute("id").toInt()
 
-        Log.d("area xml parsed", "ID: $id")
+        //Log.d("area xml parsed", "ID: $id")
 
         val skiAreaName = node.getElementsByTagName("name").item(0) as Element
         val name = skiAreaName.textContent
         Log.d("area xml parsed", "Name: $name")
 
         val liftCount = parseLiftCount(node)
-        Log.d("area xml parsed", "Lift Count: $liftCount")
+        //Log.d("area xml parsed", "Lift Count: $liftCount")
 
         val runCount = parseRunCount(node)
-        Log.d("area xml parsed", "Run Count: $runCount")
+        //Log.d("area xml parsed", "Run Count: $runCount")
 
         val openingYear = parseOpeningYear(node)
-        Log.d("area xml parsed", "Opening Year: $openingYear")
+        //Log.d("area xml parsed", "Opening Year: $openingYear")
 
         val website = parseWebsite(node)
-        Log.d("area xml parsed", "Website: $website")
+        //Log.d("area xml parsed", "Website: $website")
 
         val maps = parseMaps(node)
-        Log.d("area xml parsed", "Map Count: ${maps.size}")
+        //Log.d("area xml parsed", "Map Count: ${maps.size}")
 
         val parentRegions = parseRegions(node)
 
@@ -101,7 +100,7 @@ object AreaXMLParser {
             throw e
         }
 
-        Log.d("getNode", doc.toXMLString())
+        //Log.d("getNode", doc.toXMLString())
 
         val nodeList = doc.getElementsByTagName("skiArea")
         return nodeList.item(0) as Element
@@ -151,11 +150,11 @@ object AreaXMLParser {
     }
 
     private fun parseMaps(element: Element): ArrayList<Int> {
-        Log.d("area xml parsed", "map parse started, content: ${(element.getElementsByTagName("skiMaps").item(0) as Element).childNodes.length}")
+        //Log.d("area xml parsed", "map parse started, content: ${(element.getElementsByTagName("skiMaps").item(0) as Element).childNodes.length}")
         val skiAreaMaps = element.getElementsByTagName("skiMap")
-        Log.d("area xml parsed", "map parse element")
+        //Log.d("area xml parsed", "map parse element")
         val maps = skiAreaMaps.toList().map { (it as Element).getAttribute("id").toInt() }
-        Log.d("area xml parsed", "map return count ${maps.size}")
+        //Log.d("area xml parsed", "map return count ${maps.size}")
 
 
         return ArrayList(maps)

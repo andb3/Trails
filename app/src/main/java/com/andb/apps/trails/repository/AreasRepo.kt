@@ -2,58 +2,64 @@ package com.andb.apps.trails.repository
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import com.andb.apps.trails.ListLiveData
 import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.database.regionsDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiRegion
+import com.andb.apps.trails.utils.mainThread
+import com.andb.apps.trails.utils.newIoThread
 import com.andb.apps.trails.xml.AreaXMLParser
-import com.andb.apps.trails.xml.RegionXMLParser
 
 object AreasRepo {
 
-/*    private val areas = ArrayList<SkiArea>()
+    private val areas = ArrayList<SkiArea>()
 
-    fun init(lifecycleOwner: LifecycleOwner){
-        areasDao().getAll().observe(lifecycleOwner, Observer { areas->
+    fun init(lifecycleOwner: LifecycleOwner) {
+        areasDao().getAll().observe(lifecycleOwner, Observer { areas ->
             this.areas.clear()
             this.areas.addAll(areas)
         })
-    }*/
+    }
 
-    fun getAreasByParent(parent: SkiRegion): List<SkiArea>{
-/*        val localIds = areas.map { it.id }
-        if(!localIds.containsAll(parent.areaIds)){ //check if all regions are downloaded
-            parent.areaIds.filter { !localIds.contains(it) }.forEach {//if not, download
-                AreaXMLParser.downloadArea(it)
-                //TODO: async downloading
+    fun getAreasFromRegion(parent: SkiRegion): ListLiveData<SkiArea?> {
+        val localValues = ArrayList(areas).filter { parent.areaIds.contains(it.id) }
+        val liveData = ListLiveData(localValues)
+        val localIds = localValues.map { it.id }
+
+        parent.areaIds.minus(localIds).forEach {
+            newIoThread {
+                val downloadedArea = AreaXMLParser.downloadArea(it)
+                mainThread {
+                    liveData.add(downloadedArea)
+                }
             }
-            return areas
-            //TODO: handle end of downloading and internet errors
-        }else{//if so, return them
-            return areas
-        }*/
-        return parent.areaIds.mapNotNull {
-            AreaXMLParser.getArea(it)
         }
+        return liveData
     }
 
-    fun getAreaById(id: Int): SkiArea?{
-        /*if(!areas.any { it.id==id }){
-            return AreaXMLParser.downloadArea(id)
-            //TODO: return directly from download
+    fun getAreasFromRegionNonLive(parent: SkiRegion): List<SkiArea?> {
+        val localValues = ArrayList(areas).filter { parent.areaIds.contains(it.id) }.toMutableList()
+        val localIds = localValues.map { it.id }
+
+        parent.areaIds.minus(localIds).forEach {
+
+            val downloadedArea = AreaXMLParser.downloadArea(it)
+            localValues.add(downloadedArea)
+
         }
-        return areas.first { it.id == id }*/
-        return AreaXMLParser.getArea(id)
+
+        return localValues
     }
 
-/*
-    fun getAllDownloadedAreas() = areas
-*/
+
+    fun getAreaById(id: Int): SkiArea? {
+        val possible = ArrayList(areas).firstOrNull { it.id == id }
+        return possible ?: AreaXMLParser.downloadArea(id)
+    }
 
 
-    fun getFavoriteAreas(): List<SkiArea>{
-        //return areas.filter { it.favorite } //Can only be favorited if already downloaded, so no check
-        return emptyList()
+    fun getFavoriteAreas(): List<SkiArea> {
+        return areas.filter { it.favorite } //Can only be favorited if already downloaded, so no check
     }
 
 }

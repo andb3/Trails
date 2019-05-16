@@ -1,4 +1,4 @@
-package com.andb.apps.trails.views.items
+package com.andb.apps.trails.views
 
 import android.content.Context
 import android.util.AttributeSet
@@ -12,7 +12,6 @@ import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
-import com.andb.apps.trails.views.GlideApp
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.like.LikeButton
@@ -32,16 +31,20 @@ class AreaItem : ConstraintLayout {
         areaName.text = area.name
         areaMaps.text = String.format(context.getString(R.string.map_count), area.maps.size)
         areaLikeButton.apply {
-            isLiked = AreasRepo.getFavoriteAreas().contains(area)
+            isLiked = area.favorite
             setOnLikeListener(object : OnLikeListener {
                 override fun liked(p0: LikeButton?) {
                     area.toggleFavorite()
-                    areasDao().updateArea(area)
+                    newIoThread {
+                        areasDao().updateArea(area)
+                    }
                 }
 
                 override fun unLiked(p0: LikeButton?) {
                     area.toggleFavorite()
-                    areasDao().updateArea(area)
+                    newIoThread {
+                        areasDao().updateArea(area)
+                    }
                 }
             })
         }

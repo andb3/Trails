@@ -1,6 +1,5 @@
 package com.andb.apps.trails
 
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -14,22 +13,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.repository.RegionsRepo
 import com.andb.apps.trails.utils.*
-import com.andb.apps.trails.views.items.MapItem
+import com.andb.apps.trails.views.MapItem
 import com.github.rongi.klaster.Klaster
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.area_layout.*
-import kotlinx.android.synthetic.main.explore_layout.*
 import kotlinx.android.synthetic.main.offline_item.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.android.Main
-import kotlinx.coroutines.withContext
 
 class AreaViewFragment : Fragment() {
 
@@ -122,38 +116,44 @@ class AreaViewFragment : Fragment() {
         setOnline()
         newIoThread {
             val skiArea = AreasRepo.getAreaById(id)
-            mainThread {
-                if(skiArea != null){
-                    areaViewName.text = skiArea.name
-                    skiArea.details.apply {
-                        areaLiftCount.showIfAvailable(liftCount, R.string.area_lift_count_text)
-                        areaRunCount.showIfAvailable(runCount, R.string.area_run_count_text)
-                        areaOpeningYear.showIfAvailable(openingYear, R.string.area_opening_year_text)
-                        areaWebsite.showIfAvailable(website, R.string.area_website_text)
-                    }
-                    ioThread {
-                        val regions = regionsFromArea(skiArea)
-                        withContext(Dispatchers.Main) {
-                            areaViewRegions.text = String.format(getString(R.string.area_regions_text), regions)
+            if(this@AreaViewFragment.isVisible) { //check for if user navigated out of this fragment before load
+                mainThread {
+                    if (skiArea != null) {
+                        areaViewName.text = skiArea.name
+                        skiArea.details.apply {
+                            areaLiftCount.showIfAvailable(liftCount, R.string.area_lift_count_text)
+                            areaRunCount.showIfAvailable(runCount, R.string.area_run_count_text)
+                            areaOpeningYear.showIfAvailable(openingYear, R.string.area_opening_year_text)
+                            areaWebsite.showIfAvailable(website, R.string.area_website_text)
+                        }
+                        ioThread {
+                            val regions = regionsFromArea(skiArea)
+                            mainThread{
+                                if(this@AreaViewFragment.isVisible) {
+                                    areaViewRegions.text = String.format(getString(R.string.area_regions_text), regions)
+                                }
+                            }
+                        }
+
+                        ioThread {
+                            maps = MapsRepo.getMapsNonLive(skiArea).sortedByDescending { it.year }
+                            mainThread {
+                                if (this@AreaViewFragment.isVisible) {
+                                    areaLoadingIndicator.visibility = View.GONE
+                                    mapAdapter.notifyDataSetChanged()
+                                    mapListRecycler.scrollToPosition(0)
+                                    mapListRecycler.scheduleLayoutAnimation()
+                                }
+                            }
+                        }
+                    } else {
+                        setOffline {
+                            loadArea(id)
                         }
                     }
 
-                    ioThread {
-                        maps = MapsRepo.getMaps(skiArea)
-                        mainThread {
-                            areaLoadingIndicator.visibility = View.GONE
-                            mapAdapter.notifyDataSetChanged()
-                            mapListRecycler.scrollToPosition(0)
-                            mapListRecycler.scheduleLayoutAnimation()
-                        }
-                    }
-                }else{
-                    setOffline {
-                        loadArea(id)
-                    }
+
                 }
-
-
             }
             this@AreaViewFragment.skiArea = skiArea
         }
@@ -204,6 +204,7 @@ fun openAreaView(areaId: Int, context: Context) {
     val ft = fragmentActivity.supportFragmentManager.beginTransaction()
     //ft.addSharedElement(context.areaItemBackground, "areaLayout")
     //ft.addSharedElement(text, "areaViewName")
+    Log.d("openAreaView", "id: $areaId")
     ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
     val intent = AreaViewFragment()
     intent.arguments =
