@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.andb.apps.trails.database.areasDao
+import com.andb.apps.trails.pages.FavoritesFragment
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.repository.RegionsRepo
@@ -53,7 +54,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         RegionsRepo.init(this)
-        AreasRepo.init(this)
+        AreasRepo.init(this){
+            viewModel.favoritesFragment.refresh()
+        }
         MapsRepo.init(this)
 
         navigation.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(pager))

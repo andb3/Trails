@@ -8,13 +8,16 @@ import com.andb.apps.trails.ListLiveData
 import com.andb.apps.trails.database.regionsDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiRegion
+import com.andb.apps.trails.utils.addNotNull
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
 import com.andb.apps.trails.xml.RegionXMLParser
+import kotlinx.coroutines.*
 
 object RegionsRepo {
 
-    private val regions by lazy { ArrayList<SkiRegion>(regionsDao().getAllStatic()) }
+    private val regions by lazy { ArrayList(regionsDao().getAllStatic()) }
+    private val currentlyDownloading = mutableMapOf<Int, Deferred<SkiRegion?>>()
 
     fun init(lifecycleOwner: LifecycleOwner) {
         regionsDao().getAll().observe(lifecycleOwner, Observer { regions ->
@@ -25,17 +28,17 @@ object RegionsRepo {
     }
 
     fun getRegionsFromParent(parent: SkiRegion): ListLiveData<SkiRegion?> {
-        val localValues = ArrayList(regions).filter { it.parentId == parent.id } //get downloaded regions
-        Log.d("getRegionsFromParent", "local values: ${localValues.map { it.name }}")
-        Log.d("getRegionsFromParent", "downloaded ${localValues.size}/${parent.childIds.size}")
-        val liveData = ListLiveData(localValues)
+        val childRegions: MutableList<SkiRegion?> = regions.filter { it.parentId == parent.id }
+            .toMutableList()
+        //Log.d("getRegionsFromParent", "local values: ${localValues.map { it.name }}")
+        //Log.d("getRegionsFromParent", "downloaded ${localValues.size}/${parent.childIds.size}")
+        val liveData = ListLiveData(childRegions)
 
-        val localIds = localValues.map { it.id }
-        parent.childIds.minus(localIds).forEach {
+        parent.childIds.minus(childRegions.mapNotNull { it?.id }).forEach { id ->
             newIoThread {
-                val downloadedRegion = RegionXMLParser.downloadRegion(it)
+                val region = getRegion(id)
                 mainThread {
-                    liveData.add(downloadedRegion)
+                    liveData.add(region)
                 }
             }
         }
@@ -44,30 +47,43 @@ object RegionsRepo {
         return liveData
     }
 
-    fun getRegionsFromParentNonLive(parent: SkiRegion): List<SkiRegion?> {
-        val localValues = ArrayList(regions).filter { it.parentId == parent.id }
-            .toMutableList() //get downloaded regions
+    suspend fun getRegionsFromParentNonLive(parent: SkiRegion): List<SkiRegion?> {
+        //get downloaded regions
+        val childRegions: MutableList<SkiRegion?> = regions.filter { it.parentId == parent.id }
+            .toMutableList()
 
-        val localIds = localValues.map { it.id }
-        parent.childIds.minus(localIds).forEach {
-            val downloadedRegion = RegionXMLParser.downloadRegion(it)
-            localValues.add(downloadedRegion)
+        parent.childIds.minus(childRegions.mapNotNull { it?.id }).forEach { id ->
+            childRegions.add(getRegion(id))
         }
 
-        return localValues
+        return childRegions
     }
 
-    fun getRegionById(id: Int): SkiRegion? {
-        val possible = ArrayList(regions).firstOrNull { it.id == id }
-        return possible ?: RegionXMLParser.downloadRegion(id)
+    suspend fun getRegionById(id: Int): SkiRegion? {
+        val local = regions.toMutableList().firstOrNull { it.id == id }
+        return local ?: getRegion(id)
     }
 
 
-    fun findAreaParents(area: SkiArea): List<SkiRegion> {
-        return area.parentIds.mapNotNull {
-            RegionXMLParser.downloadRegion(it)
+    suspend fun findAreaParents(area: SkiArea): List<SkiRegion> {
+        val areaParents = regions.filter { it.areaIds.contains(area.id) }.toMutableList()
+        area.parentIds.minus(areaParents.map { it.id }).forEach {
+            areaParents.addNotNull(getRegion(it))
         }
+        return areaParents
     }
 
+    private suspend fun getRegion(id: Int): SkiRegion? {
+
+
+        if (!currentlyDownloading.containsKey(id)) {
+            val job = CoroutineScope(Dispatchers.IO).async {
+                return@async RegionXMLParser.downloadRegion(id)
+            }
+            currentlyDownloading[id] = job
+        }
+
+        return currentlyDownloading[id]?.await()
+    }
 
 }

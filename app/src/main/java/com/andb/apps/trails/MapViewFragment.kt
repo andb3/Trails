@@ -19,6 +19,7 @@ import com.andb.apps.trails.download.FileDownloader
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
+import com.andb.apps.trails.utils.applyEach
 import com.andb.apps.trails.utils.ioThread
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
@@ -31,6 +32,7 @@ import com.davemorrissey.labs.subscaleview.ImageSource
 import de.number42.subsampling_pdf_decoder.PDFDecoder
 import de.number42.subsampling_pdf_decoder.PDFRegionDecoder
 import kotlinx.android.synthetic.main.map_view.*
+import kotlinx.android.synthetic.main.offline_item.view.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.Main
 
@@ -54,13 +56,30 @@ class MapViewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setStatusBarColors(activity!!, false)
+        loadMap()
+
+        mapViewOfflineItem.apply {
+            listOf(offlineTitle, offlineDescription).applyEach {
+                setTextColor(Color.WHITE)
+            }
+            offlineImage.setColorFilter(Color.WHITE)
+            offlineRefreshButton.setOnClickListener {
+                loadMap()
+            }
+        }
+
+    }
+
+
+    fun loadMap() {
         mapLoadingIndicator.visibility = View.VISIBLE
+        mapViewOfflineItem.visibility = View.GONE
         newIoThread {
             val map = MapsRepo.getMapById(mapKey)
 
             mainThread {
 
-                map?.apply{
+                map?.apply {
                     skiMapAreaName?.text = areaName
                     skiMapYear?.text = year.toString()
                     if (!isPdf()) {
@@ -75,13 +94,8 @@ class MapViewFragment : Fragment() {
                                     }
 
                                     override fun onLoadFailed(errorDrawable: Drawable?) {
-                                        skiMapAreaName?.text = resources.getText(R.string.offline_error_title)
-                                        skiMapYear?.text = resources.getText(R.string.offline_error_desc)
                                         mapLoadingIndicator.visibility = View.GONE
-
-                                        val drawable = resources.getDrawable(R.drawable.ill_connection)
-                                        mapImageView.setImage(ImageSource.bitmap(drawable.toBitmap()))
-                                        mapImageView.isZoomEnabled = false
+                                        mapViewOfflineItem.visibility = View.VISIBLE
                                     }
 
                                     override fun onResourceCleared(placeholder: Drawable?) {}
@@ -108,18 +122,12 @@ class MapViewFragment : Fragment() {
 
                     }
                 }
-                if(map==null){
-                    skiMapAreaName?.text = resources.getText(R.string.offline_error_title)
-                    skiMapYear?.text = resources.getText(R.string.offline_error_desc)
+                if (map == null) {
                     mapLoadingIndicator.visibility = View.GONE
-
-                    val drawable = resources.getDrawable(R.drawable.ill_connection)
-                    mapImageView.setImage(ImageSource.bitmap(drawable.toBitmap()))
-                    mapImageView.isZoomEnabled = false
+                    mapViewOfflineItem.visibility = View.VISIBLE
                 }
             }
         }
-
     }
 }
 

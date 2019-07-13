@@ -72,11 +72,13 @@
 
             <include
                 android:id="@+id/areaOfflineItem"
-                android:visibility="gone"
                 layout="@layout/offline_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center_vertical" />
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

@@ -9,37 +9,45 @@ import com.andb.apps.trails.objects.SkiRegion
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
 import com.andb.apps.trails.xml.AreaXMLParser
+import kotlinx.coroutines.*
 
 object AreasRepo {
 
     private val areas = ArrayList<SkiArea>()
 
-    fun init(lifecycleOwner: LifecycleOwner) {
+    var initLoad = false
+    fun init(lifecycleOwner: LifecycleOwner, onLoad: (()->Unit)? = null) {
         areasDao().getAll().observe(lifecycleOwner, Observer { areas ->
             this.areas.clear()
             this.areas.addAll(areas)
+            if(!initLoad){
+                onLoad?.invoke()
+                initLoad = true
+            }
         })
     }
 
     fun getAreasFromRegion(parent: SkiRegion): ListLiveData<SkiArea?> {
         val localValues = ArrayList(areas).filter { parent.areaIds.contains(it.id) }
-        val liveData = ListLiveData(localValues)
-        val localIds = localValues.map { it.id }
-
-        parent.areaIds.minus(localIds).forEach {
-            newIoThread {
-                val downloadedArea = AreaXMLParser.downloadArea(it)
-                mainThread {
-                    liveData.add(downloadedArea)
-                }
+        val liveData = ListLiveData<SkiArea?>(localValues)
+        val jobs = mutableListOf<Deferred<SkiArea?>>()
+        parent.areaIds.minus(localValues.map { it.id }).forEach {
+            val job = CoroutineScope(Dispatchers.IO).async {
+                return@async AreaXMLParser.downloadArea(it)
+            }
+            jobs.add(job)
+        }
+        newIoThread {
+            jobs.forEach {
+                liveData.add(it.await())
             }
         }
         return liveData
     }
 
     fun getAreasFromRegionNonLive(parent: SkiRegion): List<SkiArea?> {
-        val localValues = ArrayList(areas).filter { parent.areaIds.contains(it.id) }.toMutableList()
-        val localIds = localValues.map { it.id }
+        val localValues: MutableList<SkiArea?> = areas.filter { parent.areaIds.contains(it.id) }.toMutableList()
+        val localIds = localValues.mapNotNull { it?.id }
 
         parent.areaIds.minus(localIds).forEach {
 

@@ -38,7 +38,9 @@ class ExploreFragment : Fragment() {
     private var childAreas: List<SkiArea> = listOf()
     private var chips: List<ChipItem> = listOf()
 
-    val viewModel: ExploreViewModel by lazy { ViewModelProviders.of(this).get(ExploreViewModel::class.java) }
+    val viewModel: ExploreViewModel by lazy {
+        ViewModelProviders.of(this).get(ExploreViewModel::class.java)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -74,7 +76,8 @@ class ExploreFragment : Fragment() {
             viewModel.refresh()
         }
 
-        if(viewModel.isFirstLoad()){
+        Log.d("firstLoad", "first load: ${viewModel.isFirstLoad()}")
+        if (viewModel.isFirstLoad()) {
             viewModel.setBaseRegion(1)
         }
 
@@ -87,69 +90,53 @@ class ExploreFragment : Fragment() {
     }
 
     private val onParentNameChangeListener = Observer<String> { name ->
+        Log.d("nameChangeListener", "name changed to $name")
         exploreHeaderRegionName.text = name
         switchRegionButton.visibility = if (viewModel.isBaseRegion()) View.VISIBLE else View.GONE
         childRegions = listOf()
         childAreas = listOf()
+        exploreAdapter.notifyDataSetChanged()
+        exploreRegionRecycler.scrollToPosition(0)
+        exploreRegionRecycler.scheduleLayoutAnimation()
     }
 
     private val onChildRegionChangeListener = Observer<List<SkiRegion?>> { regions ->
-        /*val newRegions = regions.filter { it.mapCount != 0 }
-            .sortedWith(Comparator { o1, o2 -> if (viewModel.isBaseRegion()) o2.mapCount.compareTo(o1.mapCount) else o1.name.compareTo(o2.name) })
-        //if (newRegions.isNotEmpty()) {
-            Log.d("regionDiff", "update")
-            //if (newRegions.intersect(childRegions).isNotEmpty()) {//if update of old values, diffutil
-                val diff = DiffUtil.calculateDiff(RegionDiffCallback(childRegions, newRegions))
-                childRegions = newRegions
-                diff.dispatchUpdatesTo(exploreAdapter)
-*//*                if (viewModel.isAllChildrenLoaded()) {
-                    setLoaded()
-                }*//*
-            *//*}else{ //otherwise reload with animation
-                Log.d("regionDiff", "reload")
-                childRegions = newRegions
-                exploreAdapter.notifyDataSetChanged()
-                exploreRegionRecycler.scrollToPosition(0)
-                exploreRegionRecycler.scheduleLayoutAnimation()
-            }
-        }*/
         val newRegions = regions.filterNotNull().filter { it.mapCount != 0 }
             .sortedWith(Comparator { o1, o2 -> if (viewModel.isBaseRegion()) o2.mapCount.compareTo(o1.mapCount) else o1.name.compareTo(o2.name) })
-        childRegions = newRegions
-        if(childRegions.isNotEmpty()){
+
+        if (regions.isNotEmpty()) {
             childAreas = listOf() //since updates to one list sometimes aren't fired on the other's change
         }
-        Log.d("regionsChanged", "new regions: ${newRegions.map { it.name }}")
+        //reload with animation
+        Log.d("regionDiff", "reload")
+        childRegions = newRegions
         exploreAdapter.notifyDataSetChanged()
+        exploreNestedScrollView.scrollTo(0, 0)
+        exploreRegionRecycler.scheduleLayoutAnimation()
+
+        Log.d("regionsChanged", "new regions: ${newRegions.map { it.name }}")
+
+
     }
 
     private val onChildAreaChangeListener = Observer<List<SkiArea?>> { areas ->
-        val newAreas = areas.filterNotNull().sortedBy { it.name }
-        /*if(newAreas.isNotEmpty()){
-            if(newAreas.intersect(childAreas).isNotEmpty()){
-                val diff = DiffUtil.calculateDiff(AreaDiffCallback(childAreas, newAreas))
-                childAreas = newAreas
-                diff.dispatchUpdatesTo(exploreAdapter)
-                if (viewModel.isAllChildrenLoaded()) {
-                    setLoaded()
-                }
-            }else{
-                childAreas = newAreas
-                exploreAdapter.notifyDataSetChanged()
-                exploreRegionRecycler.scrollToPosition(0)
-                exploreRegionRecycler.scheduleLayoutAnimation()
-            }
-        }*/
-        childAreas = newAreas
-        if(childAreas.isNotEmpty()){
-            childRegions = listOf() //since updates to one list sometimes aren't fired on the other's change
+        val newAreas = areas.toList().filterNotNull().sortedBy { it.name }
+
+        if (areas.isNotEmpty()) {
+            childRegions = listOf()
         }
-         //since
-        Log.d("areasChanged", "new areas: ${newAreas.map { it.name }}")
+        Log.d("areaDiff", "reload")
+        childAreas = newAreas
         exploreAdapter.notifyDataSetChanged()
+        exploreNestedScrollView.scrollTo(0, 0)
+        exploreRegionRecycler.scheduleLayoutAnimation()
+
+        Log.d("areasChanged", "new areas: ${newAreas.map { it.name }}")
+
+
     }
 
-    private val onChipChangeListener = Observer<List<ChipItem>> { chips->
+    private val onChipChangeListener = Observer<List<ChipItem>> { chips ->
         this.chips = chips
         exploreAdapter.notifyDataSetChanged()
     }
@@ -194,6 +181,8 @@ class ExploreFragment : Fragment() {
         .bind { position ->
             when (itemViewType) {
                 EXPLORE_REGION_ITEM_TYPE -> {
+/*                    val payload: Any? = payloads.firstOrNull()
+                    if(payload.isListOf<ChipItem>()) {*/
                     val region = childRegions[adapterPosition]
 
                     regionName.text = region.name
@@ -202,8 +191,8 @@ class ExploreFragment : Fragment() {
                         viewModel.nextRegion(region)
                     }
 
-                    regionChildrenChip1.visibility = if((region.childIds.size + region.areaIds.size)>=1) View.VISIBLE else View.GONE
-                    regionChildrenChip2.visibility = if((region.childIds.size + region.areaIds.size)>=2) View.VISIBLE else View.GONE
+                    regionChildrenChip1.visibility = if ((region.childIds.size + region.areaIds.size) >= 1) View.VISIBLE else View.GONE
+                    regionChildrenChip2.visibility = if ((region.childIds.size + region.areaIds.size) >= 2) View.VISIBLE else View.GONE
 
                     val items = chips.filter { it.parentId == region.id }
                     if (items.isNotEmpty()) {
@@ -226,6 +215,11 @@ class ExploreFragment : Fragment() {
                             setIconOnly(createLoadingDrawable())
                         }
                     }
+                    /*}else{
+                        payload as List<ChipItem>
+                        regionChildrenChip1.setupChild(payload.getOrNull(0))
+                        regionChildrenChip2.setupChild(payload.getOrNull(1))
+                    }*/
 
 
                 }
@@ -240,22 +234,22 @@ class ExploreFragment : Fragment() {
                 else -> EXPLORE_REGION_ITEM_TYPE
             }
         }
-        .getItemId { pos->
+        .getItemId { pos ->
             return@getItemId when {
                 childRegions.isEmpty() -> childAreas[pos].id
-                else->childRegions[pos].id
+                else -> childRegions[pos].id
             }.toLong()
         }
         .build()
 
-    internal class RegionDiffCallback(oldList: List<SkiRegion>, newTasks: List<SkiRegion>) :
-        DiffCallback<SkiRegion>(oldList, newTasks) {
+    private class RegionDiffCallback(oldList: List<SkiRegion>, newList: List<SkiRegion>) :
+        DiffCallback<SkiRegion>(oldList, newList) {
         override fun areItemsTheSame(oldItem: SkiRegion, newItem: SkiRegion): Boolean {
             return oldItem.id == newItem.id
         }
     }
 
-    internal class AreaDiffCallback(oldList: List<SkiArea>, newTasks: List<SkiArea>) :
+    private class AreaDiffCallback(oldList: List<SkiArea>, newTasks: List<SkiArea>) :
         DiffCallback<SkiArea>(oldList, newTasks) {
         override fun areItemsTheSame(oldItem: SkiArea, newItem: SkiArea): Boolean {
             return oldItem.id == newItem.id
@@ -264,9 +258,9 @@ class ExploreFragment : Fragment() {
 
     private fun Chip.setupChild(chipItem: ChipItem?) {
 
-        when{
-            chipItem==null-> visibility = View.GONE
-            chipItem.area!=null->{
+        when {
+            chipItem == null -> visibility = View.GONE
+            chipItem.area != null -> {
                 visibility = View.VISIBLE
                 text = chipItem.area.name
                 setTextOnly()
@@ -274,7 +268,7 @@ class ExploreFragment : Fragment() {
                     openAreaView(chipItem.area.id, context)
                 }
             }
-            chipItem.region!=null->{
+            chipItem.region != null -> {
                 visibility = View.VISIBLE
                 text = chipItem.region.name
                 setTextOnly()
@@ -282,7 +276,7 @@ class ExploreFragment : Fragment() {
                     viewModel.nextRegion(chipItem.region)
                 }
             }
-            else->{
+            else -> {
                 visibility = View.VISIBLE
                 text = ""
                 setIconOnly(resources.getDrawable(R.drawable.ic_cloud_off_black_24dp))

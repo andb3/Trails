@@ -143,6 +143,11 @@ class AreaViewFragment : Fragment() {
                                     mapAdapter.notifyDataSetChanged()
                                     mapListRecycler.scrollToPosition(0)
                                     mapListRecycler.scheduleLayoutAnimation()
+                                    if(maps.map { it.id } != skiArea.maps){
+                                        setOffline {
+                                            loadArea(id)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -160,14 +165,12 @@ class AreaViewFragment : Fragment() {
     }
 
     fun setOffline(onRefresh: ((View) -> Unit)? = null){
-        areaViewName.text = resources.getText(R.string.offline_error_title)
-        areaViewFab.visibility = View.GONE
+/*        areaViewFab.visibility = View.GONE
         if (isTranslated()) {
             toggleInfo(areaViewFab)
-        }
+        }*/
         areaLoadingIndicator.visibility = View.GONE
         areaOfflineItem.visibility = View.VISIBLE
-        areaOfflineItem.offlineTitle.visibility = View.GONE
         areaOfflineItem.offlineRefreshButton.setOnClickListener(onRefresh)
     }
 
@@ -193,7 +196,7 @@ class AreaViewFragment : Fragment() {
         }
         .build()
 
-    private fun regionsFromArea(area: SkiArea): String {
+    private suspend fun regionsFromArea(area: SkiArea): String {
         val regions = RegionsRepo.findAreaParents(area)
         return regions.joinToString { region -> region.name }
     }

@@ -107,15 +107,17 @@ fun NodeList.toList(): List<Node> {
 }
 fun Node.isElement(): Boolean = nodeType == Node.ELEMENT_NODE
 
+@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
+fun <reified T : Any> Any?.isListOf(): Boolean{
+    return this is List<*> && this.isListOf<T>()
+}
 
+@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
+fun <reified T : Any> List<*>.isListOf(): Boolean =
+    T::class.java.isAssignableFrom(this::class.java.componentType)
 
 infix fun <T> T.and(other: T) = listOf(this, other)
 
-private fun isNetworkAvailable(context: Context): Boolean {
-    val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-    val activeNetworkInfo = connectivityManager.activeNetworkInfo
-    return activeNetworkInfo != null && activeNetworkInfo.isConnected
-}
 
 abstract class DiffCallback<T>(private val newList: List<T>, private val oldList: List<T>) : DiffUtil.Callback(){
 
@@ -133,4 +135,10 @@ abstract class DiffCallback<T>(private val newList: List<T>, private val oldList
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean = areContentsTheSame(oldList[oldItemPosition], newList[newItemPosition])
     open fun areContentsTheSame(oldItem: T, newItem: T): Boolean = areItemsTheSame(oldItem, newItem)
 
+}
+
+fun <T> MutableList<T>.addNotNull(element: T?){
+    if(element!=null){
+        this.add(element)
+    }
 }

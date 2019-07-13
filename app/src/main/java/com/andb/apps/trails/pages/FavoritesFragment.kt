@@ -30,7 +30,9 @@ const val AREA_ITEM_TYPE = 98123
 class FavoritesFragment : Fragment() {
 
     val favoritesAdapter by lazy { favoritesAdapter() }
-    private val viewModel: FavoritesViewModel by lazy { ViewModelProviders.of(this).get(FavoritesViewModel::class.java) }
+    private val viewModel: FavoritesViewModel by lazy {
+        ViewModelProviders.of(this).get(FavoritesViewModel::class.java)
+    }
 
     val maps = ArrayList<SkiMap>()
     val areas = ArrayList<SkiArea>()
@@ -62,21 +64,29 @@ class FavoritesFragment : Fragment() {
             adapter = favoritesAdapter
         }
 
-        viewModel.getFavoriteMaps().observe(viewLifecycleOwner, Observer { newMaps->
+        viewModel.getFavoriteMaps().observe(viewLifecycleOwner, Observer { newMaps ->
+            val refreshNeeded = newMaps != maps
             maps.clear()
             maps.addAll(newMaps)
-            refresh()
+            if (refreshNeeded) {
+                refresh()
+            }
         })
-        viewModel.getFavoriteAreas().observe(viewLifecycleOwner, Observer { newAreas->
+        viewModel.getFavoriteAreas().observe(viewLifecycleOwner, Observer { newAreas ->
+            val refreshNeeded = newAreas != areas
             areas.clear()
             areas.addAll(newAreas)
-            refresh()
+            if (refreshNeeded) {
+                refresh()
+            }
         })
     }
 
-    private fun refresh(){
+    fun refresh(animate: Boolean = true) {
         favoritesAdapter.notifyDataSetChanged()
-        favoritesRecycler.scheduleLayoutAnimation()
+        if (animate) {
+            favoritesRecycler.scheduleLayoutAnimation()
+        }
     }
 
 
