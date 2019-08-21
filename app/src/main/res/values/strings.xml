@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Trails</string>
     <string name="title_fav">Favorites</string>
     <string name="title_explore">Explore</string>
     <string name="title_search">Search</string>

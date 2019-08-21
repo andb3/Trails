@@ -49,7 +49,7 @@ class AreaItem : ConstraintLayout {
             })
         }
         newIoThread {
-            val previewUrl = area.mapPreviewUrl()
+            val previewUrl = area.getMapPreviewUrl()
             mainThread {
                 GlideApp.with(this@AreaItem).load(previewUrl)
                     .transforms(CenterCrop(), RoundedCorners(dpToPx(8))).into(areaMapPreview)

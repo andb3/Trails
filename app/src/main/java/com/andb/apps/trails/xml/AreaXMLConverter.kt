@@ -1,55 +1,24 @@
 package com.andb.apps.trails.xml
 
 import android.util.Log
-import android.util.Log.d
-import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiAreaDetails
 import com.andb.apps.trails.utils.toList
-import org.w3c.dom.Document
+import okhttp3.ResponseBody
 import org.w3c.dom.Element
-import org.w3c.dom.NodeList
-import org.xml.sax.InputSource
-import java.io.StringWriter
-import java.net.URL
+import retrofit2.Converter
+import retrofit2.Retrofit
+import java.lang.reflect.Type
 import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 
-
-object AreaXMLParser {
-
-    fun getIndex(): NodeList {
-        val url = URL("https://skimap.org/SkiAreas/index.xml")
-        val dbf = DocumentBuilderFactory.newInstance()
-        val db = dbf.newDocumentBuilder()
-        val doc = db.parse(InputSource(url.openStream()))
+class AreaXMLConverter : Converter<ResponseBody, SkiArea?> {
+    override fun convert(value: ResponseBody): SkiArea? {
+        Log.d("areaXMLConverter", "converting area")
+        val db = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val doc = db.parse(value.byteStream())
         doc.documentElement.normalize()
-
-        return doc.getElementsByTagName("skiArea")
-    }
-
-    fun downloadArea(areaId: Int): SkiArea? {
-        d("downloadArea", "downloading area id: $areaId")
-        val area = getArea(areaId)
-        if(area!=null){
-            areasDao().insertArea(area)
-        }
-        return area
-
-    }
-
-    private fun getArea(areaId: Int): SkiArea? {
-        try {
-            val node = getNode(areaId)
-            return parse(node)
-        } catch (e: Exception) {
-            d("internetError", e.toString())
-            return null
-        }
-
+        val node = doc.getElementsByTagName("skiArea").item(0) as Element
+        return parse(node)
     }
 
     private fun parse(node: Element): SkiArea {
@@ -85,34 +54,6 @@ object AreaXMLParser {
 
         return SkiArea(id, name, details, maps, parentRegions)
 
-    }
-
-    private fun getNode(areaId: Int): Element {
-        val url = URL("https://skimap.org/SkiAreas/view/$areaId.xml")
-        val dbf = DocumentBuilderFactory.newInstance()
-        val db = dbf.newDocumentBuilder()
-        val doc = db.parse(InputSource(url.openStream()))
-        try {
-            doc.documentElement.normalize()
-        } catch (e: Exception) {
-            Log.e("areaParseFail", "failed for area $areaId")
-            //e.printStackTrace()
-            throw e
-        }
-
-        //Log.d("getNode", doc.toXMLString())
-
-        val nodeList = doc.getElementsByTagName("skiArea")
-        return nodeList.item(0) as Element
-    }
-
-    private fun Document.toXMLString(): String {
-        val tf = TransformerFactory.newInstance()
-        val transformer = tf.newTransformer()
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
-        val writer = StringWriter()
-        transformer.transform(DOMSource(this), StreamResult(writer))
-        return writer.buffer.toString().replace("\n|\r", "")
     }
 
     private fun parseLiftCount(element: Element): Int? {
@@ -158,5 +99,11 @@ object AreaXMLParser {
 
 
         return ArrayList(maps)
+    }
+}
+
+class AreaXMLConverterFactory : Converter.Factory(){
+    override fun responseBodyConverter(type: Type, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
+        return AreaXMLConverter()
     }
 }

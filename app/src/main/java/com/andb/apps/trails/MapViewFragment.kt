@@ -12,29 +12,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
+import com.andb.apps.trails.database.mapsDao
 import com.andb.apps.trails.download.FileDownloader
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
-import com.andb.apps.trails.utils.applyEach
-import com.andb.apps.trails.utils.ioThread
-import com.andb.apps.trails.utils.mainThread
-import com.andb.apps.trails.utils.newIoThread
+import com.andb.apps.trails.utils.*
 import com.andb.apps.trails.views.GlideApp
 import com.andb.apps.trails.xml.filenameFromURL
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.target.DrawableImageViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import com.google.android.material.snackbar.Snackbar
+import com.like.LikeButton
+import com.like.OnLikeListener
 import de.number42.subsampling_pdf_decoder.PDFDecoder
 import de.number42.subsampling_pdf_decoder.PDFRegionDecoder
 import kotlinx.android.synthetic.main.map_view.*
+import kotlinx.android.synthetic.main.map_view.mapLoadingIndicator
+import kotlinx.android.synthetic.main.map_view.mapViewOfflineItem
+import kotlinx.android.synthetic.main.map_view.view.*
 import kotlinx.android.synthetic.main.offline_item.view.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.android.Main
+import java.lang.Exception
 
 class MapViewFragment : Fragment() {
 
@@ -58,6 +64,7 @@ class MapViewFragment : Fragment() {
         setStatusBarColors(activity!!, false)
         loadMap()
 
+
         mapViewOfflineItem.apply {
             listOf(offlineTitle, offlineDescription).applyEach {
                 setTextColor(Color.WHITE)
@@ -68,12 +75,17 @@ class MapViewFragment : Fragment() {
             }
         }
 
+        mapViewDownload.setOnClickListener {
+            Snackbar.make(it, "Downloading to external storage is coming soon", Snackbar.LENGTH_SHORT)
+                .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
+        }
+
     }
 
 
-    fun loadMap() {
+    private fun loadMap() {
         mapLoadingIndicator.visibility = View.VISIBLE
-        mapViewOfflineItem.visibility = View.GONE
+        listOf(mapViewOfflineItem, mapViewFavorite, mapViewDownload).applyEach { visibility = View.GONE }
         newIoThread {
             val map = MapsRepo.getMapById(mapKey)
 
@@ -91,6 +103,7 @@ class MapViewFragment : Fragment() {
                                     override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                         mapImageView.setImage(ImageSource.cachedBitmap(resource))
                                         mapLoadingIndicator.visibility = View.GONE
+                                        mapViewDownload.visibility = View.VISIBLE
                                     }
 
                                     override fun onLoadFailed(errorDrawable: Drawable?) {
@@ -108,19 +121,54 @@ class MapViewFragment : Fragment() {
 
                     } else {
                         CoroutineScope(Dispatchers.IO).launch {
-                            val file = FileDownloader.downloadFile(url, filenameFromURL(url))
+                            val file = FileDownloader.downloadFile(requireContext(), url, filenameFromURL(url))
                             withContext(Dispatchers.Main) {
                                 mapImageView?.apply {
                                     setMinimumTileDpi(120)
                                     setBitmapDecoderFactory { PDFDecoder(0, file, 10f) }
                                     setRegionDecoderFactory { PDFRegionDecoder(0, file, 10f) }
                                     setImage(ImageSource.uri(file.absolutePath))
+                                    setOnImageEventListener(object :
+                                        SubsamplingScaleImageView.DefaultOnImageEventListener() {
+                                        override fun onReady() {
+                                            super.onReady()
+                                            this@MapViewFragment.mapLoadingIndicator?.visibility = View.GONE
+                                            this@MapViewFragment.mapViewDownload.visibility = View.VISIBLE
+
+                                        }
+
+                                        override fun onImageLoadError(e: Exception?) {
+                                            super.onImageLoadError(e)
+                                            mapLoadingIndicator?.visibility = View.GONE
+                                            mapViewOfflineItem.visibility = View.VISIBLE
+                                        }
+                                    })
                                 }
-                                mapLoadingIndicator?.visibility = View.GONE
                             }
                         }
-
                     }
+
+                    mapViewFavorite.apply {
+                        isLiked = map.favorite
+                        visibility = View.VISIBLE
+                        setOnLikeListener(object : OnLikeListener {
+                            override fun liked(likeButton: LikeButton?) {
+                                map.favorite = true
+                                newIoThread {
+                                    mapsDao().updateMap(map)
+                                }
+                            }
+
+                            override fun unLiked(likeButton: LikeButton?) {
+                                map.favorite = false
+                                newIoThread {
+                                    mapsDao().updateMap(map)
+                                }
+                            }
+                        })
+                    }
+
+
                 }
                 if (map == null) {
                     mapLoadingIndicator.visibility = View.GONE

@@ -21,9 +21,9 @@ interface MapsDao{
 
     @Query("SELECT * FROM SkiMap")
     fun getAll(): LiveData<List<SkiMap>>
-/*
+
     @Query("SELECT * FROM SkiMap WHERE map_parent = :parentId")
-    fun getMapsFromParent(parentId: Int): List<SkiMap>*/
+    fun getMapsFromParent(parentId: Int): LiveData<List<SkiMap>>
 
     @Query("SELECT * FROM SkiMap WHERE map_favorite = 1")
     fun getFavorites(): LiveData<List<SkiMap>>

@@ -9,11 +9,14 @@ import okhttp3.ResponseBody
 import org.w3c.dom.Element
 import retrofit2.Converter
 import retrofit2.Retrofit
+import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.lang.reflect.Type
 import javax.xml.parsers.DocumentBuilderFactory
 
 class RegionXMLConverter : Converter<ResponseBody, SkiRegion?> {
     override fun convert(value: ResponseBody): SkiRegion? {
+        Log.d("regionXMLConverter", "converting region")
         val db = DocumentBuilderFactory.newInstance().newDocumentBuilder()
         val doc = db.parse(value.byteStream())
         doc.documentElement.normalize()
@@ -33,10 +36,9 @@ class RegionXMLConverter : Converter<ResponseBody, SkiRegion?> {
 
         val parentRegions = node.getElementsByTagName("parents").item(0).childNodes.toList()
         val parentId = parentRegions
-            .filter { it is Element }
-            .map { (it as Element).getAttribute("level").toInt() }
-            .sortedBy { it }
-            .firstOrNull()
+            .filterIsInstance<Element>()
+            .map { it.getAttribute("level").toInt() }
+            .minBy { it }
 
         val childRegions = ArrayList(parseChildren(node))
         val childAreas = ArrayList(parseAreas(node))

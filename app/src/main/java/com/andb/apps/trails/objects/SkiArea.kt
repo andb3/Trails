@@ -20,7 +20,7 @@ open class SkiArea(
     val parentIds: ArrayList<Int>,
     var favorite: Boolean = false
 ) {
-    fun mapPreviewUrl(): String? {
+    suspend fun getMapPreviewUrl(): String? {
         val mapId = maps.firstOrNull() ?: return null
         val map = MapsRepo.getMapById(mapId)
         return map?.thumbnails?.firstOrNull()?.url

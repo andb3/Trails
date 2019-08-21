@@ -1,39 +1,55 @@
 package com.andb.apps.trails.repository
 
 import android.util.Log
-import android.util.Log.d
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.andb.apps.trails.ListLiveData
 import com.andb.apps.trails.database.regionsDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiRegion
+import com.andb.apps.trails.utils.RegionService
 import com.andb.apps.trails.utils.addNotNull
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
-import com.andb.apps.trails.xml.RegionXMLParser
-import kotlinx.coroutines.*
+import com.andb.apps.trails.xml.RegionXMLConverterFactory
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import kotlinx.coroutines.Deferred
+import retrofit2.Response
+import retrofit2.Retrofit
+import java.lang.Exception
+import java.net.UnknownHostException
+import java.security.spec.ECField
 
 object RegionsRepo {
 
-    private val regions by lazy { ArrayList(regionsDao().getAllStatic()) }
-    private val currentlyDownloading = mutableMapOf<Int, Deferred<SkiRegion?>>()
+    private val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl("https://skimap.org/")
+        .addCallAdapterFactory(CoroutineCallAdapterFactory())
+        .addConverterFactory(RegionXMLConverterFactory())
+        .build()
 
-    fun init(lifecycleOwner: LifecycleOwner) {
+    private val regionService = retrofit.create(RegionService::class.java)
+
+    private val regions = ArrayList<SkiRegion>()
+    private val currentlyDownloading = mutableMapOf<Int, Deferred<Response<SkiRegion?>>>()
+
+    var initLoad = false
+    fun init(lifecycleOwner: LifecycleOwner, onLoad: (() -> Unit)? = null) {
         regionsDao().getAll().observe(lifecycleOwner, Observer { regions ->
             this.regions.clear()
             this.regions.addAll(regions)
-            d("regionsRepo", "init")
+            if (!initLoad) {
+                onLoad?.invoke()
+                initLoad = true
+            }
         })
     }
 
     fun getRegionsFromParent(parent: SkiRegion): ListLiveData<SkiRegion?> {
-        val childRegions: MutableList<SkiRegion?> = regions.filter { it.parentId == parent.id }
+        val childRegions: MutableList<SkiRegion?> = regions.filter { parent.childIds.contains(it.id) }
             .toMutableList()
-        //Log.d("getRegionsFromParent", "local values: ${localValues.map { it.name }}")
-        //Log.d("getRegionsFromParent", "downloaded ${localValues.size}/${parent.childIds.size}")
+        Log.d("getRegionsFromParent", "local ${childRegions.size}/${parent.childIds.size}")
         val liveData = ListLiveData(childRegions)
-
         parent.childIds.minus(childRegions.mapNotNull { it?.id }).forEach { id ->
             newIoThread {
                 val region = getRegion(id)
@@ -49,7 +65,7 @@ object RegionsRepo {
 
     suspend fun getRegionsFromParentNonLive(parent: SkiRegion): List<SkiRegion?> {
         //get downloaded regions
-        val childRegions: MutableList<SkiRegion?> = regions.filter { it.parentId == parent.id }
+        val childRegions: MutableList<SkiRegion?> = regions.filter { parent.childIds.contains(it.id) }
             .toMutableList()
 
         parent.childIds.minus(childRegions.mapNotNull { it?.id }).forEach { id ->
@@ -60,7 +76,7 @@ object RegionsRepo {
     }
 
     suspend fun getRegionById(id: Int): SkiRegion? {
-        val local = regions.toMutableList().firstOrNull { it.id == id }
+        val local = regions.toMutableList().firstOrNull { it?.id == id }
         return local ?: getRegion(id)
     }
 
@@ -75,15 +91,28 @@ object RegionsRepo {
 
     private suspend fun getRegion(id: Int): SkiRegion? {
 
-
+        //TODO: remove jobs that were null due to offline (so refresh works)
         if (!currentlyDownloading.containsKey(id)) {
-            val job = CoroutineScope(Dispatchers.IO).async {
-                return@async RegionXMLParser.downloadRegion(id)
+            try {
+                currentlyDownloading[id] = regionService.getRegion(id)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-            currentlyDownloading[id] = job
         }
 
-        return currentlyDownloading[id]?.await()
+        val region = try {
+            val job = currentlyDownloading[id]
+            val response = job?.await()
+            response?.body()
+        } catch (e: Exception) {
+            currentlyDownloading.remove(id)
+            e.printStackTrace()
+            null
+        }
+        if (region != null) {
+            regionsDao().insertRegion(region)
+        }
+        return region
     }
 
 }

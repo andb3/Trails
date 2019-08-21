@@ -12,12 +12,12 @@ import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
-import com.andb.apps.trails.repository.AreasRepo
-import com.andb.apps.trails.repository.MapsRepo
-import com.andb.apps.trails.repository.RegionsRepo
+import com.andb.apps.trails.objects.SkiRegion
 import com.andb.apps.trails.utils.*
 import com.andb.apps.trails.views.MapItem
 import com.github.rongi.klaster.Klaster
@@ -28,9 +28,13 @@ import kotlinx.android.synthetic.main.offline_item.view.*
 class AreaViewFragment : Fragment() {
 
     private val mapAdapter by lazy { mapAdapter() }
+    private var skiArea: SkiArea? = null
     private var maps = listOf<SkiMap>()
     private var areaKey = -1
-    var skiArea: SkiArea? = null
+
+    val viewModel: AreaViewModel by lazy {
+        ViewModelProviders.of(this).get(AreaViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,7 +64,58 @@ class AreaViewFragment : Fragment() {
         }
         setupFab()
         mapListRecycler.adapter = mapAdapter
-        loadArea(areaKey)
+        viewModel.skiArea.observe(viewLifecycleOwner, areaObserver)
+        viewModel.maps.observe(viewLifecycleOwner, mapsObserver)
+        viewModel.regions.observe(viewLifecycleOwner, regionsObserver)
+        viewModel.offline.observe(viewLifecycleOwner, offlineObserver)
+        viewModel.loadArea(areaKey)
+    }
+
+    private val areaObserver = Observer<SkiArea?> { newArea ->
+
+        this.skiArea = newArea
+
+        if (newArea != null) {
+            areaViewName.text = newArea.name
+            newArea.details.apply {
+                areaLiftCount.showIfAvailable(liftCount, R.string.area_lift_count_text)
+                areaRunCount.showIfAvailable(runCount, R.string.area_run_count_text)
+                areaOpeningYear.showIfAvailable(openingYear, R.string.area_opening_year_text)
+                areaWebsite.showIfAvailable(website, R.string.area_website_text)
+            }
+        } else {
+            setOffline {
+                viewModel.loadArea(id)
+            }
+        }
+    }
+
+    private val mapsObserver = Observer<List<SkiMap>> {newMaps->
+        this.maps = newMaps.sortedByDescending { it.year }
+        if (maps.map { it.id }.toSet() != skiArea?.maps?.toSet()) {
+            Log.d("areaFragmentOffline", "newMaps: ${maps.map {it.id}}, area maps: ${skiArea?.maps}")
+            viewModel.offline.postValue(true)
+        }
+        areaLoadingIndicator.visibility = View.GONE
+        mapAdapter.notifyDataSetChanged()
+        mapListRecycler.scrollToPosition(0)
+        mapListRecycler.scheduleLayoutAnimation()
+    }
+
+    private val regionsObserver = Observer<List<SkiRegion>> { regions ->
+        val string = regions.joinToString { region -> region.name }
+        areaViewRegions.text = String.format(getString(R.string.area_regions_text), string)
+    }
+
+    private val offlineObserver = Observer<Boolean> { offline->
+        if (offline){
+            setOffline{
+                areaLoadingIndicator.visibility = View.VISIBLE
+                viewModel.loadArea(id)
+            }
+        }else{
+            setOnline()
+        }
     }
 
     private fun setupFab() {
@@ -112,72 +167,15 @@ class AreaViewFragment : Fragment() {
         }
     }
 
-    private fun loadArea(id: Int) {
-        setOnline()
-        newIoThread {
-            val skiArea = AreasRepo.getAreaById(id)
-            if(this@AreaViewFragment.isVisible) { //check for if user navigated out of this fragment before load
-                mainThread {
-                    if (skiArea != null) {
-                        areaViewName.text = skiArea.name
-                        skiArea.details.apply {
-                            areaLiftCount.showIfAvailable(liftCount, R.string.area_lift_count_text)
-                            areaRunCount.showIfAvailable(runCount, R.string.area_run_count_text)
-                            areaOpeningYear.showIfAvailable(openingYear, R.string.area_opening_year_text)
-                            areaWebsite.showIfAvailable(website, R.string.area_website_text)
-                        }
-                        ioThread {
-                            val regions = regionsFromArea(skiArea)
-                            mainThread{
-                                if(this@AreaViewFragment.isVisible) {
-                                    areaViewRegions.text = String.format(getString(R.string.area_regions_text), regions)
-                                }
-                            }
-                        }
 
-                        ioThread {
-                            maps = MapsRepo.getMapsNonLive(skiArea).sortedByDescending { it.year }
-                            mainThread {
-                                if (this@AreaViewFragment.isVisible) {
-                                    areaLoadingIndicator.visibility = View.GONE
-                                    mapAdapter.notifyDataSetChanged()
-                                    mapListRecycler.scrollToPosition(0)
-                                    mapListRecycler.scheduleLayoutAnimation()
-                                    if(maps.map { it.id } != skiArea.maps){
-                                        setOffline {
-                                            loadArea(id)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        setOffline {
-                            loadArea(id)
-                        }
-                    }
-
-
-                }
-            }
-            this@AreaViewFragment.skiArea = skiArea
-        }
-    }
-
-    fun setOffline(onRefresh: ((View) -> Unit)? = null){
-/*        areaViewFab.visibility = View.GONE
-        if (isTranslated()) {
-            toggleInfo(areaViewFab)
-        }*/
+    fun setOffline(onRefresh: ((View) -> Unit)? = null) {
         areaLoadingIndicator.visibility = View.GONE
         areaOfflineItem.visibility = View.VISIBLE
         areaOfflineItem.offlineRefreshButton.setOnClickListener(onRefresh)
     }
 
     fun setOnline() {
-        areaViewName.text = ""
         areaViewFab.visibility = View.VISIBLE
-        areaLoadingIndicator.visibility = View.VISIBLE
         areaOfflineItem.visibility = View.GONE
     }
 
@@ -192,14 +190,10 @@ class AreaViewFragment : Fragment() {
             }
         }
         .bind { position ->
-            (itemView as MapItem).setup(maps[position], skiArea?.name?:"")
+            (itemView as MapItem).setup(maps[position], skiArea?.name ?: "")
         }
         .build()
 
-    private suspend fun regionsFromArea(area: SkiArea): String {
-        val regions = RegionsRepo.findAreaParents(area)
-        return regions.joinToString { region -> region.name }
-    }
 }
 
 fun openAreaView(areaId: Int, context: Context) {

@@ -1,12 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mapView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/background_dark"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+        android:id="@+id/mapImageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:background="@color/colorMapOverlay"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/skiMapAreaName"
+        app:layout_constraintVertical_bias="0.0">
+
+    </FrameLayout>
 
     <ProgressBar
         android:id="@+id/mapLoadingIndicator"
@@ -25,22 +48,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/mapImageView"
-        />
-
-
-    <FrameLayout
-        android:id="@+id/frameLayout"
-        android:layout_width="match_parent"
-        android:layout_height="88dp"
-        android:background="@color/colorMapOverlay"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/skiMapAreaName">
-
-    </FrameLayout>
 
     <TextView
         android:id="@+id/skiMapAreaName"
@@ -66,10 +73,37 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <com.like.LikeButton
+        android:id="@+id/mapViewFavorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:circle_end_color="@color/colorAccent"
+        app:circle_start_color="@color/colorSecondary"
+        app:dots_primary_color="@color/colorAccent"
+        app:dots_secondary_color="@color/colorSecondary"
+        app:icon_size="24dp"
+        app:icon_type="heart"
+        app:layout_constraintBottom_toBottomOf="@+id/frameLayout"
+        app:layout_constraintEnd_toEndOf="@+id/frameLayout"
+        app:layout_constraintTop_toTopOf="@+id/frameLayout"
+        app:like_drawable="@drawable/ic_favorite_accent_24dp"
+        app:unlike_drawable="@drawable/ic_favorite_border_white_24dp" />
+
+    <ImageView
+        android:id="@+id/mapViewDownload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="0dp"
+        android:tint="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/mapImageView"
+        app:layout_constraintEnd_toStartOf="@+id/mapViewFavorite"
+        app:layout_constraintTop_toTopOf="@+id/frameLayout"
+        app:srcCompat="@drawable/ic_download_black_24dp" />
+
     <include
         android:id="@+id/mapViewOfflineItem"
         layout="@layout/offline_item"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

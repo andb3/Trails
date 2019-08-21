@@ -11,11 +11,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.andb.apps.trails.R
 import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
+import com.andb.apps.trails.repository.AreasRepo
+import com.andb.apps.trails.repository.RegionsRepo
+import com.andb.apps.trails.utils.unaccent
 import com.andb.apps.trails.views.AreaItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.search_layout.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.android.Main
 
 class SearchFragment : Fragment() {
 

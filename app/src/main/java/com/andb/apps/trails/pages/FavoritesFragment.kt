@@ -14,13 +14,14 @@ import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
+import com.andb.apps.trails.utils.mainThread
+import com.andb.apps.trails.utils.newIoThread
 import com.andb.apps.trails.views.AreaItem
 import com.andb.apps.trails.views.MapItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.favorites_divider.*
 import kotlinx.android.synthetic.main.favorites_layout.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.android.Main
 
 const val MAP_DIVIDER_TYPE = 28903
 const val AREA_DIVIDER_TYPE = 23890
@@ -121,9 +122,16 @@ class FavoritesFragment : Fragment() {
                 MAP_DIVIDER_TYPE -> favoriteDividerText.text = getString(R.string.favorites_maps_divider_text)
                 AREA_DIVIDER_TYPE -> favoriteDividerText.text = getString(R.string.favorites_area_divider_text)
                 MAP_ITEM_TYPE -> {
-                    val map = maps[adapterPosition - 1 /*divider*/]
-                    val area = AreasRepo.getAreaById(map.parentId)//should already be downloaded i.e. instantaneous
-                    (itemView as MapItem).setup(map, area?.name ?: "", true)
+                    if(adapterPosition>=0) {
+                        val map = maps[adapterPosition - 1 /*divider*/]
+                        newIoThread {
+                            val area = AreasRepo.getAreaById(map.parentId)//should already be downloaded i.e. instantaneous
+                            mainThread {
+                                (itemView as MapItem).setup(map, area?.name ?: "", true)
+                            }
+                        }
+                    }
+
                 }
                 AREA_ITEM_TYPE -> {
                     val area = areas[adapterPosition - 2 /*dividers*/ - maps.size]
