@@ -75,11 +75,6 @@ class MapViewFragment : Fragment() {
             }
         }
 
-        mapViewDownload.setOnClickListener {
-            Snackbar.make(it, "Downloading to external storage is coming soon", Snackbar.LENGTH_SHORT)
-                .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
-        }
-
     }
 
 
@@ -121,7 +116,7 @@ class MapViewFragment : Fragment() {
 
                     } else {
                         CoroutineScope(Dispatchers.IO).launch {
-                            val file = FileDownloader.downloadFile(requireContext(), url, filenameFromURL(url))
+                            val file = FileDownloader.downloadFile(requireContext(), url)
                             withContext(Dispatchers.Main) {
                                 mapImageView?.apply {
                                     setMinimumTileDpi(120)
@@ -166,6 +161,12 @@ class MapViewFragment : Fragment() {
                                 }
                             }
                         })
+                    }
+
+                    mapViewDownload.setOnClickListener {
+                        FileDownloader.downloadFileExternal(requireContext(), url, areaName, year)
+                        Snackbar.make(it, "Downloading", Snackbar.LENGTH_SHORT)
+                            .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
                     }
 
 

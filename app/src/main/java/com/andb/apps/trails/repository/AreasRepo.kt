@@ -71,7 +71,6 @@ object AreasRepo {
         return localValues
     }
 
-
     suspend fun getAreaById(id: Int): SkiArea? {
         val possible = areas.toList().firstOrNull { it.id == id }
         Log.d("getAreaById", "possible id: ${possible?.id}")
@@ -79,7 +78,6 @@ object AreasRepo {
     }
 
     private suspend fun getArea(id: Int): SkiArea? {
-
         if (!currentlyDownloading.containsKey(id)) {
             currentlyDownloading[id] = areaService.getArea(id)
         }

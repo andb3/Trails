@@ -22,5 +22,3 @@ interface RegionService {
     @GET("Regions/view/{regionId}.xml")
     fun getRegion(@Path("regionId") regionId: Int): Deferred<Response<SkiRegion?>>
 }
-
-const val BASE_URL = "https://skimap.org"
