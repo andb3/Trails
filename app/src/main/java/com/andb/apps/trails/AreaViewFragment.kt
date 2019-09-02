@@ -12,26 +12,29 @@ import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
-import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.database.regionAreaDao
-import com.andb.apps.trails.objects.BaseSkiArea
 import com.andb.apps.trails.objects.SkiArea
-import com.andb.apps.trails.utils.Utils
-import com.andb.apps.trails.utils.dpToPx
-import com.andb.apps.trails.views.items.MapItem
-import com.andb.apps.trails.xml.AreaXMLParser
+import com.andb.apps.trails.objects.SkiMap
+import com.andb.apps.trails.objects.SkiRegion
+import com.andb.apps.trails.utils.*
+import com.andb.apps.trails.views.MapItem
 import com.github.rongi.klaster.Klaster
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.area_layout.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.android.Main
+import kotlinx.android.synthetic.main.offline_item.view.*
 
 class AreaViewFragment : Fragment() {
 
-    lateinit var skiArea: SkiArea
     private val mapAdapter by lazy { mapAdapter() }
+    private var skiArea: SkiArea? = null
+    private var maps = listOf<SkiMap>()
     private var areaKey = -1
+
+    val viewModel: AreaViewModel by lazy {
+        ViewModelProviders.of(this).get(AreaViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,8 +63,59 @@ class AreaViewFragment : Fragment() {
             }
         }
         setupFab()
+        mapListRecycler.adapter = mapAdapter
+        viewModel.skiArea.observe(viewLifecycleOwner, areaObserver)
+        viewModel.maps.observe(viewLifecycleOwner, mapsObserver)
+        viewModel.regions.observe(viewLifecycleOwner, regionsObserver)
+        viewModel.offline.observe(viewLifecycleOwner, offlineObserver)
+        viewModel.loadArea(areaKey)
+    }
 
-        loadArea(areaKey)
+    private val areaObserver = Observer<SkiArea?> { newArea ->
+
+        this.skiArea = newArea
+
+        if (newArea != null) {
+            areaViewName.text = newArea.name
+            newArea.details.apply {
+                areaLiftCount.showIfAvailable(liftCount, R.string.area_lift_count_text)
+                areaRunCount.showIfAvailable(runCount, R.string.area_run_count_text)
+                areaOpeningYear.showIfAvailable(openingYear, R.string.area_opening_year_text)
+                areaWebsite.showIfAvailable(website, R.string.area_website_text)
+            }
+        } else {
+            setOffline {
+                viewModel.loadArea(id)
+            }
+        }
+    }
+
+    private val mapsObserver = Observer<List<SkiMap>> {newMaps->
+        this.maps = newMaps.sortedByDescending { it.year }
+        if (maps.map { it.id }.toSet() != skiArea?.maps?.toSet()) {
+            Log.d("areaFragmentOffline", "newMaps: ${maps.map {it.id}}, area maps: ${skiArea?.maps}")
+            viewModel.offline.postValue(true)
+        }
+        areaLoadingIndicator.visibility = View.GONE
+        mapAdapter.notifyDataSetChanged()
+        mapListRecycler.scrollToPosition(0)
+        mapListRecycler.scheduleLayoutAnimation()
+    }
+
+    private val regionsObserver = Observer<List<SkiRegion>> { regions ->
+        val string = regions.joinToString { region -> region.name }
+        areaViewRegions.text = String.format(getString(R.string.area_regions_text), string)
+    }
+
+    private val offlineObserver = Observer<Boolean> { offline->
+        if (offline){
+            setOffline{
+                areaLoadingIndicator.visibility = View.VISIBLE
+                viewModel.loadArea(id)
+            }
+        }else{
+            setOnline()
+        }
     }
 
     private fun setupFab() {
@@ -113,42 +167,22 @@ class AreaViewFragment : Fragment() {
         }
     }
 
-    private fun loadArea(id: Int) {
-        areaLoadingIndicator.visibility = View.VISIBLE
 
-        CoroutineScope(Dispatchers.IO).launch {
-            skiArea = SkiArea(areasDao().getAreasById(id)[0], ArrayList())
-            withContext(Dispatchers.Main) {
-                skiArea.apply {
-                    areaViewName.text = name
-                    Utils.showIfAvailable(liftCount, areaLiftCount, R.string.area_lift_count_text)
-                    Utils.showIfAvailable(runCount, areaRunCount, R.string.area_run_count_text)
-                    Utils.showIfAvailable(openingYear, areaOpeningYear, R.string.area_opening_year_text)
-                    Utils.showIfAvailable(website, areaWebsite, R.string.area_website_text)
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val regions = regionsFromArea(skiArea)
-                        withContext(Dispatchers.Main) {
-                            areaViewRegions.text = String.format(getString(R.string.area_regions_text), regions)
-                        }
-                    }
-
-                }
-                mapListRecycler.adapter = mapAdapter
-            }
-            val received = AreaXMLParser.parseFull(id, skiArea)
-            withContext(Dispatchers.Main) {
-                areaLoadingIndicator?.visibility = View.GONE
-                skiArea = received
-                mapAdapter.notifyDataSetChanged()
-            }
-        }
+    fun setOffline(onRefresh: ((View) -> Unit)? = null) {
+        areaLoadingIndicator.visibility = View.GONE
+        areaOfflineItem.visibility = View.VISIBLE
+        areaOfflineItem.offlineRefreshButton.setOnClickListener(onRefresh)
     }
 
+    fun setOnline() {
+        areaViewFab.visibility = View.VISIBLE
+        areaOfflineItem.visibility = View.GONE
+    }
 
     private fun mapAdapter() = Klaster.get()
-        .itemCount { skiArea.maps.size }
+        .itemCount { maps.size }
         .view { _, _ ->
-            MapItem(context ?: this.requireContext()).also {
+            MapItem(requireContext()).also {
                 it.layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
@@ -156,27 +190,22 @@ class AreaViewFragment : Fragment() {
             }
         }
         .bind { position ->
-            (itemView as MapItem).setup(skiArea.maps[position])
-
+            (itemView as MapItem).setup(maps[position], skiArea?.name ?: "")
         }
         .build()
 
-    private fun regionsFromArea(area: BaseSkiArea): String {
-        val regions = regionAreaDao().getRegionsForArea(area.id)
-        return regions.joinToString { region -> region.name }
-
-    }
 }
 
-fun openAreaView(area: BaseSkiArea, context: Context, text: View) {
+fun openAreaView(areaId: Int, context: Context) {
     val fragmentActivity = context as FragmentActivity
     val ft = fragmentActivity.supportFragmentManager.beginTransaction()
     //ft.addSharedElement(context.areaItemBackground, "areaLayout")
     //ft.addSharedElement(text, "areaViewName")
+    Log.d("openAreaView", "id: $areaId")
     ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
     val intent = AreaViewFragment()
     intent.arguments =
-        Bundle().also { it.putInt("areaKey", area.id) }
+        Bundle().also { it.putInt("areaKey", areaId) }
     ft.add(R.id.exploreAreaReplacement, intent)
     ft.addToBackStack("areaView")
     ft.commit()

@@ -1,49 +1,30 @@
 package com.andb.apps.trails.objects
 
-import android.util.Log
-import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.database.regionAreaDao
-import com.andb.apps.trails.database.regionsDao
+import androidx.room.*
+import org.jetbrains.annotations.Nullable
 
-class SkiRegion(id: Int,
-                name: String,
-                mapCount: Int,
-                parentId: Int,
-                val areas: ArrayList<BaseSkiArea>,
-                val children: ArrayList<SkiRegion>) : BaseSkiRegion(id, name, mapCount, parentId) {
+@Entity
+open class SkiRegion(
+    @PrimaryKey
+    @ColumnInfo(name = "regionId")
+    val id: Int,
+    @ColumnInfo(name = "regionName")
+    val name: String,
+    @ColumnInfo(name = "regionMaps")
+    val mapCount: Int,
+    @ColumnInfo(name = "regionChildIds")
+    val childIds: ArrayList<Int>,
+    @ColumnInfo(name = "regionAreaIds")
+    val areaIds: ArrayList<Int>,
+    @ColumnInfo(name = "regionParentId")
+    @Nullable
+    val parentId: Int?
+) {
 
-    constructor(baseRegion: BaseSkiRegion) : this(
-        baseRegion.id,
-        baseRegion.name,
-        baseRegion.mapCount,
-        baseRegion.parentId?: -1,
-        ArrayList(areasFromParent(baseRegion.id)),
-        ArrayList(childrenFromParent(baseRegion.id))
-    )
+    /**Returns whether region is one of the 4 base regions (Americas, Europe, Asia, Oceania)**/
+    fun isBase() = listOf(1, 2, 3, 4).contains(id)
 
-
-
+    /**Returns whether region isn't a base region**/
+    fun isChild() = !isBase()
 }
 
-private fun childrenFromParent(parentId: Int): List<SkiRegion>{
-    return regionsDao().getAllFromParent(parentId)
-        .filter { baseSkiRegion -> baseSkiRegion.mapCount!=0 }
-        .map { baseSkiRegion -> SkiRegion(baseSkiRegion) }
-        .sortedWith(Comparator { o1, o2 ->
-            when(parentId){
-                1,2,3,4->o2.mapCount.compareTo(o1.mapCount)
-                else-> o1.name.compareTo(o2.name)
-            }
-        })
-}
-
-private fun areasFromParent(parentId: Int): List<BaseSkiArea>{
-    val joins = regionAreaDao().getJoinsByRegionId(parentId)
-    Log.d("areasFromParent", "Size: ${joins.size}")
-    return joins
-        .map { areasDao().getAreasById(it.areaId)[0] }
-        .sortedWith(Comparator { o1, o2 ->
-            o1.name.compareTo(o2.name)
-        })
-    //return regionAreaDao().getAreasForRegion(parentId)
-}

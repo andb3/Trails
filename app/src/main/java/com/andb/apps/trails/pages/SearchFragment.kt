@@ -10,16 +10,18 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.andb.apps.trails.R
 import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.objects.BaseSkiArea
-import com.andb.apps.trails.views.items.AreaItem
+import com.andb.apps.trails.objects.SkiArea
+import com.andb.apps.trails.repository.AreasRepo
+import com.andb.apps.trails.repository.RegionsRepo
+import com.andb.apps.trails.utils.unaccent
+import com.andb.apps.trails.views.AreaItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.search_layout.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.android.Main
 
 class SearchFragment : Fragment() {
 
-    var list = ArrayList<BaseSkiArea>()
+    var list = ArrayList<SkiArea>()
     val searchAdapter by lazy { searchAdapter() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -58,7 +60,7 @@ class SearchFragment : Fragment() {
     private fun searchAdapter() = Klaster.get()
         .itemCount { list.size }
         .view { _, _ ->
-            AreaItem(context?: this.requireContext()).also {
+            AreaItem(context ?: this.requireContext()).also {
                 it.layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT

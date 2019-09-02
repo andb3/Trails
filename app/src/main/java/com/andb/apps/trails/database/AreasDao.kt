@@ -1,33 +1,34 @@
 package com.andb.apps.trails.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.andb.apps.trails.objects.BaseSkiArea
+import com.andb.apps.trails.objects.SkiArea
 
 
 @Dao
 interface AreasDao {
 
-    @Insert
-    fun insertArea(area: BaseSkiArea)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertArea(area: SkiArea)
 
     @Update
-    fun updateArea(area: BaseSkiArea)
+    fun updateArea(area: SkiArea)
 
     @Delete
-    fun deleteArea(area: BaseSkiArea)
+    fun deleteArea(area: SkiArea)
 
-    @Query("SELECT * FROM BaseSkiArea WHERE area_id = :id")
-    fun getAreasById(id: Int): List<BaseSkiArea>
+/*    @Query("SELECT * FROM SkiArea WHERE area_id = :id")
+    fun getAreasById(id: Int): List<SkiArea>*/
 
-    @Query("SELECT * FROM BaseSkiArea")
-    fun getAll(): List<BaseSkiArea>
+    @Query("SELECT * FROM SkiArea")
+    fun getAll(): LiveData<List<SkiArea>>
 
-    @Query("SELECT * FROM BaseSkiArea WHERE favorite = 1")
-    fun getFavorites(): List<BaseSkiArea>
+    @Query("SELECT * FROM SkiArea")
+    fun getAllStatic(): List<SkiArea>
 
-    @Query("SELECT Count(*) FROM BaseSkiArea")
-    fun getSize(): Int
+    @Query("SELECT * FROM SkiArea WHERE favorite = 1")
+    fun getFavorites(): LiveData<List<SkiArea>>
 
-    @Query("SELECT * FROM BaseSkiArea WHERE name LIKE :text")
-    fun search(text: String): List<BaseSkiArea>
+    @Query("SELECT * FROM SkiArea WHERE name LIKE :text")
+    fun search(text: String): List<SkiArea>
 }

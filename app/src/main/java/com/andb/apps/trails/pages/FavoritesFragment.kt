@@ -5,16 +5,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
+import com.andb.apps.trails.FavoritesViewModel
 import com.andb.apps.trails.R
-import com.andb.apps.trails.lists.FavoritesList
-import com.andb.apps.trails.views.items.AreaItem
-import com.andb.apps.trails.views.items.MapItem
+import com.andb.apps.trails.objects.SkiArea
+import com.andb.apps.trails.objects.SkiMap
+import com.andb.apps.trails.repository.AreasRepo
+import com.andb.apps.trails.repository.MapsRepo
+import com.andb.apps.trails.utils.mainThread
+import com.andb.apps.trails.utils.newIoThread
+import com.andb.apps.trails.views.AreaItem
+import com.andb.apps.trails.views.MapItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.favorites_divider.*
 import kotlinx.android.synthetic.main.favorites_layout.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.android.Main
 
 const val MAP_DIVIDER_TYPE = 28903
 const val AREA_DIVIDER_TYPE = 23890
@@ -24,6 +31,12 @@ const val AREA_ITEM_TYPE = 98123
 class FavoritesFragment : Fragment() {
 
     val favoritesAdapter by lazy { favoritesAdapter() }
+    private val viewModel: FavoritesViewModel by lazy {
+        ViewModelProviders.of(this).get(FavoritesViewModel::class.java)
+    }
+
+    val maps = ArrayList<SkiMap>()
+    val areas = ArrayList<SkiArea>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,6 +51,8 @@ class FavoritesFragment : Fragment() {
 
         val gridLinearManager = GridLayoutManager(context, 2)
         gridLinearManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+
+            //map items only span one grid position, all others span 2 aka full width
             override fun getSpanSize(position: Int): Int {
                 return when (favoritesAdapter.getItemViewType(position)) {
                     MAP_ITEM_TYPE -> 1
@@ -50,18 +65,34 @@ class FavoritesFragment : Fragment() {
             adapter = favoritesAdapter
         }
 
-
-        CoroutineScope(Dispatchers.IO).launch {
-            FavoritesList.init(favoritesAdapter)
-            withContext(Dispatchers.Main) {
-                favoritesAdapter.notifyDataSetChanged()
-                favoritesRecycler.scheduleLayoutAnimation()
+        viewModel.getFavoriteMaps().observe(viewLifecycleOwner, Observer { newMaps ->
+            val refreshNeeded = newMaps != maps
+            maps.clear()
+            maps.addAll(newMaps)
+            if (refreshNeeded) {
+                refresh()
             }
+        })
+        viewModel.getFavoriteAreas().observe(viewLifecycleOwner, Observer { newAreas ->
+            val refreshNeeded = newAreas != areas
+            areas.clear()
+            areas.addAll(newAreas)
+            if (refreshNeeded) {
+                refresh()
+            }
+        })
+    }
+
+    fun refresh(animate: Boolean = true) {
+        favoritesAdapter.notifyDataSetChanged()
+        if (animate) {
+            favoritesRecycler.scheduleLayoutAnimation()
         }
     }
 
+
     private fun favoritesAdapter() = Klaster.get()
-        .itemCount { FavoritesList.count() }
+        .itemCount { maps.size + areas.size + 2 /*dividers*/ }
         .view { viewType, parent ->
             when (viewType) {
                 MAP_DIVIDER_TYPE, AREA_DIVIDER_TYPE -> layoutInflater.inflate(
@@ -69,7 +100,9 @@ class FavoritesFragment : Fragment() {
                     parent,
                     false
                 )
-                MAP_ITEM_TYPE -> MapItem(context ?: this.requireContext()).also {
+                MAP_ITEM_TYPE -> MapItem(
+                    context ?: this.requireContext()
+                ).also {
                     it.layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
@@ -84,16 +117,24 @@ class FavoritesFragment : Fragment() {
             }
 
         }
-        .bind { fakePos ->
+        .bind { _ ->
             when (itemViewType) {
                 MAP_DIVIDER_TYPE -> favoriteDividerText.text = getString(R.string.favorites_maps_divider_text)
                 AREA_DIVIDER_TYPE -> favoriteDividerText.text = getString(R.string.favorites_area_divider_text)
                 MAP_ITEM_TYPE -> {
-                    val map = FavoritesList.favoriteMaps[FavoritesList.positionInList(adapterPosition)]
-                    (itemView as MapItem).setup(map, true)
+                    if(adapterPosition>=0) {
+                        val map = maps[adapterPosition - 1 /*divider*/]
+                        newIoThread {
+                            val area = AreasRepo.getAreaById(map.parentId)//should already be downloaded i.e. instantaneous
+                            mainThread {
+                                (itemView as MapItem).setup(map, area?.name ?: "", true)
+                            }
+                        }
+                    }
+
                 }
                 AREA_ITEM_TYPE -> {
-                    val area = FavoritesList.favoriteAreas[FavoritesList.positionInList(adapterPosition)]
+                    val area = areas[adapterPosition - 2 /*dividers*/ - maps.size]
                     (itemView as AreaItem).setup(area)
                 }
             }
@@ -101,13 +142,12 @@ class FavoritesFragment : Fragment() {
         .getItemViewType { position ->
             when (position) {
                 0 -> MAP_DIVIDER_TYPE
-                in 1..FavoritesList.favoriteMaps.size -> MAP_ITEM_TYPE
-                FavoritesList.favoriteMaps.size + 1 -> AREA_DIVIDER_TYPE
+                in 1..maps.size -> MAP_ITEM_TYPE
+                maps.size + 1 -> AREA_DIVIDER_TYPE
                 else -> AREA_ITEM_TYPE
             }
         }
         .build()
-
 
 
 }
