@@ -1,7 +1,6 @@
 package com.andb.apps.trails
 
 import android.util.Log
-import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Transformations
@@ -9,15 +8,12 @@ import androidx.lifecycle.ViewModel
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.objects.SkiRegion
+import com.andb.apps.trails.pages.ListLiveData
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.repository.RegionsRepo
-import com.andb.apps.trails.utils.ioThread
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
-import com.andb.apps.trails.utils.showIfAvailable
-import kotlinx.android.synthetic.main.area_layout.*
-import kotlinx.coroutines.CoroutineScope
 
 class AreaViewModel : ViewModel() {
 
@@ -55,14 +51,14 @@ class AreaViewModel : ViewModel() {
             return@switchMap ListLiveData<SkiMap>()
         }
         Log.d("areaViewModel", "maps refreshed not null")
-        return@switchMap MapsRepo.getMaps(area)
+        return@switchMap MapsRepo.getMapsFromArea(area)
     }
 
 
     fun loadArea(id: Int) {
         offline.value = false
         newIoThread {
-            val newArea = AreasRepo.getAreaById(id)
+            val newArea = AreasRepo.getAreaByID(id)
             mainThread {
                 if(!(newArea == null && skiArea.value != null)) { //don't have null value overtake not-null one
                     skiArea.value = newArea

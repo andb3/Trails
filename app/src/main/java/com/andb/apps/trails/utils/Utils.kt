@@ -4,9 +4,11 @@ import android.content.res.Resources
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.github.rongi.klaster.Klaster
 import com.github.rongi.klaster.KlasterBuilder
 import kotlinx.coroutines.*
 import org.w3c.dom.Node
@@ -14,10 +16,10 @@ import org.w3c.dom.NodeList
 import java.text.Normalizer
 
 
-fun TextView.showIfAvailable(value: Int?, stringId: Int) {
+fun TextView.showIfAvailable(value: Int?, stringID: Int) {
 
     if (!value.isNullOrNegative()) {
-        text = String.format(context.getString(stringId), value)
+        text = String.format(context.getString(stringID), value)
         visibility = View.VISIBLE
 
     } else {
@@ -26,10 +28,10 @@ fun TextView.showIfAvailable(value: Int?, stringId: Int) {
 
 }
 
-fun TextView.showIfAvailable(value: String?, stringId: Int) {
+fun TextView.showIfAvailable(value: String?, stringID: Int) {
 
     if (!value.isNullOrEmpty()) {
-        text = String.format(context.getString(stringId), value)
+        text = String.format(context.getString(stringID), value)
         visibility = View.VISIBLE
 
     } else {
@@ -160,4 +162,14 @@ fun time(tag: String = "timedOperation", block: () -> Unit) {
     block.invoke()
     val end = System.nanoTime().toFloat()
     Log.d(tag, "time: ${(end - start) / 1000000} ms")
+}
+
+fun filenameFromURL(url: String): String{
+    return url.drop("https://skimap.org/data/".length).replace('/', '.')
+}
+
+class InitialLiveData<T>(private val initialValue: T): MutableLiveData<T>(){
+    override fun getValue(): T {
+        return super.getValue() ?: initialValue
+    }
 }

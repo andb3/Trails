@@ -13,6 +13,7 @@ import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.RegionsRepo
+import com.andb.apps.trails.utils.newIoThread
 import com.andb.apps.trails.utils.unaccent
 import com.andb.apps.trails.views.AreaItem
 import com.github.rongi.klaster.Klaster
@@ -69,7 +70,12 @@ class SearchFragment : Fragment() {
         }
         .bind {position ->
             val area = list[position]
-            (itemView as AreaItem).setup(area)
+            (itemView as AreaItem).setup(area){
+                area.favorite = it
+                newIoThread {
+                    areasDao().updateArea(area)
+                }
+            }
 
         }
         .build()

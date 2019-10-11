@@ -23,7 +23,7 @@ import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.utils.*
 import com.andb.apps.trails.views.GlideApp
-import com.andb.apps.trails.xml.filenameFromURL
+import com.andb.apps.trails.utils.filenameFromURL
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.target.DrawableImageViewTarget
 import com.bumptech.glide.request.transition.Transition
@@ -82,7 +82,7 @@ class MapViewFragment : Fragment() {
         mapLoadingIndicator.visibility = View.VISIBLE
         listOf(mapViewOfflineItem, mapViewFavorite, mapViewDownload).applyEach { visibility = View.GONE }
         newIoThread {
-            val map = MapsRepo.getMapById(mapKey)
+            val map = MapsRepo.getMapByID(mapKey)
 
             mainThread {
 
@@ -112,8 +112,6 @@ class MapViewFragment : Fragment() {
                             e.printStackTrace()
                             Log.e("glideLoadError", "view is off screen")
                         }
-
-
                     } else {
                         CoroutineScope(Dispatchers.IO).launch {
                             val file = FileDownloader.downloadFile(requireContext(), url)

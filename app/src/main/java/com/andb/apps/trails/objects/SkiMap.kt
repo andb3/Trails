@@ -18,7 +18,7 @@ class SkiMap(
     @ColumnInfo(name = "map_url")
     val url: String,
     @ColumnInfo(name = "map_parent")
-    val parentId: Int) {
+    val parentID: Int) {
 
     @ColumnInfo(name = "map_favorite")
     var favorite = false

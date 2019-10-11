@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Context.DOWNLOAD_SERVICE
 import android.net.Uri
 import android.util.Log
-import com.andb.apps.trails.xml.filenameFromURL
+import com.andb.apps.trails.utils.filenameFromURL
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream

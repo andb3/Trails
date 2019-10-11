@@ -1,4 +1,4 @@
-package com.andb.apps.trails
+package com.andb.apps.trails.pages
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations

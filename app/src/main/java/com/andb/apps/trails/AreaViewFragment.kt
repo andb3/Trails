@@ -196,16 +196,16 @@ class AreaViewFragment : Fragment() {
 
 }
 
-fun openAreaView(areaId: Int, context: Context) {
+fun openAreaView(areaID: Int, context: Context) {
     val fragmentActivity = context as FragmentActivity
     val ft = fragmentActivity.supportFragmentManager.beginTransaction()
     //ft.addSharedElement(context.areaItemBackground, "areaLayout")
     //ft.addSharedElement(text, "areaViewName")
-    Log.d("openAreaView", "id: $areaId")
+    Log.d("openAreaView", "id: $areaID")
     ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
     val intent = AreaViewFragment()
     intent.arguments =
-        Bundle().also { it.putInt("areaKey", areaId) }
+        Bundle().also { it.putInt("areaKey", areaID) }
     ft.add(R.id.exploreAreaReplacement, intent)
     ft.addToBackStack("areaView")
     ft.commit()

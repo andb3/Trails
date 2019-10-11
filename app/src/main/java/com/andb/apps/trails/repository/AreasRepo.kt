@@ -1,95 +1,57 @@
 package com.andb.apps.trails.repository
 
-import android.util.Log
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
-import com.andb.apps.trails.ListLiveData
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.Transformations
+import com.andb.apps.trails.Prefs
 import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiRegion
-import com.andb.apps.trails.utils.*
-import com.andb.apps.trails.xml.AreaXMLConverterFactory
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import kotlinx.coroutines.*
-import retrofit2.Response
+import com.andb.apps.trails.utils.AreaService
+import com.andb.apps.trails.utils.InitialLiveData
+import com.andb.apps.trails.utils.newIoThread
 import retrofit2.Retrofit
-import java.lang.Exception
-import java.net.UnknownHostException
-import kotlin.collections.ArrayList
+import retrofit2.converter.moshi.MoshiConverterFactory
 
 object AreasRepo {
 
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl("https://skimap.org/")
-        .addCallAdapterFactory(CoroutineCallAdapterFactory())
-        .addConverterFactory(AreaXMLConverterFactory())
+        .addConverterFactory(MoshiConverterFactory.create())
         .build()
 
     private val areaService = retrofit.create(AreaService::class.java)
 
-    private val areas = ArrayList<SkiArea>()
-    private val currentlyDownloading = mutableMapOf<Int, Deferred<Response<SkiArea?>>>()
+    val loading = InitialLiveData(true)
 
-
-    var initLoad = false
-    fun init(lifecycleOwner: LifecycleOwner, onLoad: (() -> Unit)? = null) {
-        areasDao().getAll().observe(lifecycleOwner, Observer { areas ->
-            this.areas.clear()
-            this.areas.addAll(areas)
-            if (!initLoad) {
-                onLoad?.invoke()
-                initLoad = true
-            }
-        })
+    fun getAreasFromRegion(parent: SkiRegion): LiveData<List<SkiArea>> {
+        return Transformations.map(areasDao().getAll()) { areas ->
+            return@map areas.filter { it.parentIDs.contains(parent.id) }
+        }
     }
 
-    fun getAreasFromRegion(parent: SkiRegion): ListLiveData<SkiArea?> {
-        val localValues: MutableList<SkiArea?> = areas.toList().filter { parent.areaIds.contains(it.id) }
-            .toMutableList()
-        val liveData = ListLiveData(localValues)
+    suspend fun getAreaByID(id: Int): SkiArea? {
+        return areasDao().getAreaByID(id)
+    }
 
-        parent.areaIds.minus(localValues.mapNotNull { it?.id }).forEach { id ->
+    /**Refreshes areas from backend. Returns boolean indicating whether loading was successful**/
+    fun updateAreas(): Boolean {
+        try {
             newIoThread {
-                val area = getArea(id)
-                mainThread {
-                    liveData.add(area)
+                if (areasDao().getAllStatic().size < areaService.getAreaCount()) {
+                    val areas = areaService.getAllAreas()
+                    areasDao().insertMultipleAreas(areas)
+                } else {
+                    val newAreas = areaService.getAreaUpdates(Prefs.lastAreasUpdate)
+                    areasDao().insertMultipleAreas(newAreas)
                 }
+                Prefs.lastAreasUpdate = System.currentTimeMillis()
             }
+            return true
+        } catch (e: Exception) {
+            return false
         }
 
-        return liveData
-    }
-
-    suspend fun getAreasFromRegionNonLive(parent: SkiRegion): List<SkiArea?> {
-        val localValues: MutableList<SkiArea?> = areas.toList().filter { parent.areaIds.contains(it.id) }
-            .toMutableList()
-
-        parent.areaIds.minus(localValues.mapNotNull { it?.id }).forEach { id ->
-            localValues.add(getArea(id))
-        }
-
-        return localValues
-    }
-
-    suspend fun getAreaById(id: Int): SkiArea? {
-        val possible = areas.toList().firstOrNull { it.id == id }
-        Log.d("getAreaById", "possible id: ${possible?.id}")
-        return possible ?: getArea(id)
-    }
-
-    private suspend fun getArea(id: Int): SkiArea? {
-        if (!currentlyDownloading.containsKey(id)) {
-            currentlyDownloading[id] = areaService.getArea(id)
-        }
-
-        val area = try { currentlyDownloading[id]?.await()?.body() } catch (e: Exception){
-            currentlyDownloading.remove(id)
-            null
-        }
-        if (area != null) {
-            areasDao().insertArea(area)
-        }
-        return area
     }
 
 }

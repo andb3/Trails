@@ -8,12 +8,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
-import com.andb.apps.trails.FavoritesViewModel
 import com.andb.apps.trails.R
+import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.repository.AreasRepo
-import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
 import com.andb.apps.trails.views.AreaItem
@@ -21,7 +20,6 @@ import com.andb.apps.trails.views.MapItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.favorites_divider.*
 import kotlinx.android.synthetic.main.favorites_layout.*
-import kotlinx.coroutines.*
 
 const val MAP_DIVIDER_TYPE = 28903
 const val AREA_DIVIDER_TYPE = 23890
@@ -125,7 +123,7 @@ class FavoritesFragment : Fragment() {
                     if(adapterPosition>=0) {
                         val map = maps[adapterPosition - 1 /*divider*/]
                         newIoThread {
-                            val area = AreasRepo.getAreaById(map.parentId)//should already be downloaded i.e. instantaneous
+                            val area = AreasRepo.getAreaByID(map.parentID)//should already be downloaded i.e. instantaneous
                             mainThread {
                                 (itemView as MapItem).setup(map, area?.name ?: "", true)
                             }
@@ -135,7 +133,12 @@ class FavoritesFragment : Fragment() {
                 }
                 AREA_ITEM_TYPE -> {
                     val area = areas[adapterPosition - 2 /*dividers*/ - maps.size]
-                    (itemView as AreaItem).setup(area)
+                    (itemView as AreaItem).setup(area){
+                        area.favorite = it
+                        newIoThread {
+                            areasDao().updateArea(area)
+                        }
+                    }
                 }
             }
         }

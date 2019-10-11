@@ -6,17 +6,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
-import com.andb.apps.trails.ChipItem
-import com.andb.apps.trails.ExploreViewModel
 import com.andb.apps.trails.R
+import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiRegion
 import com.andb.apps.trails.openAreaView
@@ -45,10 +44,7 @@ class ExploreFragment : Fragment() {
     private val childRegionsQueue = ArrayDeque<List<SkiRegion>>()
     private val childAreasQueue = ArrayDeque<List<SkiArea>>()
 
-
-    val viewModel: ExploreViewModel by lazy {
-        ViewModelProviders.of(this).get(ExploreViewModel::class.java)
-    }
+    val viewModel: ExploreViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -93,7 +89,7 @@ class ExploreFragment : Fragment() {
         viewModel.childRegions.observe(viewLifecycleOwner, onChildRegionChangeListener)
         viewModel.childAreas.observe(viewLifecycleOwner, onChildAreaChangeListener)
         viewModel.offline.observe(viewLifecycleOwner, onOfflineChangeListener)
-        viewModel.getLoadingState().observe(viewLifecycleOwner, onLoadingChangeListener)
+        viewModel.loading.observe(viewLifecycleOwner, onLoadingChangeListener)
     }
 
     private val onParentNameChangeListener = Observer<String> { name ->
@@ -284,8 +280,8 @@ class ExploreFragment : Fragment() {
                             viewModel.nextRegion(region)
                         }
 
-                        regionChildrenChip1.visibility = if ((region.childIds.size + region.areaIds.size) > 0) View.VISIBLE else View.GONE
-                        regionChildrenChip2.visibility = if ((region.childIds.size + region.areaIds.size) > 1) View.VISIBLE else View.GONE
+                        regionChildrenChip1.visibility = if ((region.childIDs.size + region.areaIDs.size) > 0) View.VISIBLE else View.GONE
+                        regionChildrenChip2.visibility = if ((region.childIDs.size + region.areaIDs.size) > 1) View.VISIBLE else View.GONE
 
 
                         (regionChildrenChip1 and regionChildrenChip2).applyEach {
@@ -299,7 +295,7 @@ class ExploreFragment : Fragment() {
                         }
 
                         viewModel.chips.observe(viewLifecycleOwner, Observer { chips ->
-                            val items = chips.filter { it.parentId == region.id }
+                            val items = chips.filter { it.parentID == region.id }
                             regionChildrenChip1.setupChild(items.getOrNull(0))
                             regionChildrenChip2.setupChild(items.getOrNull(1))
 
@@ -310,7 +306,13 @@ class ExploreFragment : Fragment() {
 
                 }
                 EXPLORE_AREA_ITEM_TYPE -> {
-                    (itemView as AreaItem).setup(childAreas[position])
+                    val area = childAreas[position]
+                    (itemView as AreaItem).setup(area){
+                        area.favorite = it
+                        newIoThread {
+                            areasDao().updateArea(area)
+                        }
+                    }
                 }
             }
 

@@ -53,15 +53,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        RegionsRepo.init(this){
-            if(viewModel.exploreFragment.isAdded){
-                viewModel.exploreFragment.viewModel.setBaseRegion(1)
-            }
+        if (viewModel.exploreFragment.isAdded) {
+            viewModel.exploreFragment.viewModel.setBaseRegion(1)
         }
-        AreasRepo.init(this){
-            viewModel.favoritesFragment.refresh(viewModel.favoritesFragment.isAdded)
-        }
-        MapsRepo.init(this)
+        viewModel.favoritesFragment.refresh(viewModel.favoritesFragment.isAdded)
 
         navigation.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(pager))
         setAdapter(pager)

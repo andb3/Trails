@@ -4,11 +4,10 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.andb.apps.trails.R
-import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.openAreaView
 import com.andb.apps.trails.openMapView
-import com.andb.apps.trails.repository.AreasRepo
+import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
@@ -27,41 +26,38 @@ class AreaItem : ConstraintLayout {
         inflate(context, R.layout.area_item, this)
     }
 
-    fun setup(area: SkiArea) {
-        areaName.text = area.name
-        areaMaps.text = String.format(context.getString(R.string.map_count), area.maps.size)
+    fun setup(area: SkiArea, onFavorite: (favorite: Boolean) -> Unit){
+        setup(area.id, area.name, area.maps.size, area.mapPreviewID(), area.favorite, onFavorite)
+    }
+
+    fun setup(id: Int, name: String, mapCount: Int, mapPreviewID: Int?, favorite: Boolean, onFavorite: (favorite: Boolean) -> Unit) {
+        areaName.text = name
+        areaMaps.text = String.format(context.getString(R.string.map_count), mapCount)
         areaLikeButton.apply {
-            isLiked = area.favorite
+            isLiked = favorite
             setOnLikeListener(object : OnLikeListener {
                 override fun liked(p0: LikeButton?) {
-                    area.toggleFavorite()
-                    newIoThread {
-                        areasDao().updateArea(area)
-                    }
+                    onFavorite.invoke(true)
                 }
 
                 override fun unLiked(p0: LikeButton?) {
-                    area.toggleFavorite()
-                    newIoThread {
-                        areasDao().updateArea(area)
-                    }
+                    onFavorite.invoke(false)
                 }
             })
         }
-        newIoThread {
-            val previewUrl = area.getMapPreviewUrl()
-            mainThread {
-                GlideApp.with(this@AreaItem).load(previewUrl)
-                    .transforms(CenterCrop(), RoundedCorners(dpToPx(8))).into(areaMapPreview)
-                areaMapPreview.setOnClickListener {
-                    val previewId = area.mapPreviewId()
-                    if(previewId!=null){
-                        openMapView(previewId, area.name, context)
-                    }
+        if (mapPreviewID != null) {
+            newIoThread {
+                val mapUrl = MapsRepo.getMapByID(mapPreviewID)
+                mainThread {
+                    GlideApp.with(this@AreaItem).load(mapUrl)
+                        .transforms(CenterCrop(), RoundedCorners(dpToPx(8))).into(areaMapPreview)
                 }
             }
+            areaMapPreview.setOnClickListener {
+                openMapView(mapPreviewID, name, context)
+            }
         }
-        setOnClickListener { openAreaView(area.id, context) }
+        setOnClickListener { openAreaView(id, context) }
 
     }
 
