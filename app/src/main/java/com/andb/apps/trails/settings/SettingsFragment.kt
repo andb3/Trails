@@ -9,11 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.andb.apps.trails.R
+import de.Maxr1998.modernpreferences.PreferencesAdapter
 import kotlinx.android.synthetic.main.settings_layout.*
 
 class SettingsFragment : Fragment() {
     private val viewModel: SettingsViewModel by viewModels()
-    private val preferencesAdapter get() = viewModel.adapter
+    private val preferencesAdapter by lazy { PreferencesAdapter(SettingsLayout.create(requireContext())) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.settings_layout, container, false)

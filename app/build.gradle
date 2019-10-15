@@ -70,14 +70,16 @@ dependencies {
     implementation 'com.github.MatrixDev.Roomigrant:RoomigrantLib:0.1.7'//room migrations
     kapt 'com.github.MatrixDev.Roomigrant:RoomigrantCompiler:0.1.7'//room migrations
     testImplementation "androidx.room:room-testing:$room_version" // Test helpers
-    implementation 'com.github.rongi:klaster:0.3.4'//inline recyclerview adapters
 
+
+    implementation 'com.github.rongi:klaster:0.3.4'//inline recyclerview adapters
     implementation 'com.github.jd-alexander:LikeButton:0.2.3'//favorites button
     implementation 'com.jonathanfinerty.once:once:1.2.2'//one-off operations
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'//unified imageview
     implementation 'de.number42:subsampling-pdf-decoder:0.1.0@aar'//pdf plugin for above
     implementation 'com.squareup.retrofit2:retrofit:2.6.1'//networking
     implementation 'com.squareup.retrofit2:converter-moshi:2.6.1'//networking convert from json
+    implementation 'com.squareup.moshi:moshi-kotlin:1.8.0'
 
     implementation 'com.google.code.gson:gson:2.8.5'
 
@@ -92,7 +94,9 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:3.1.0'//dialog library
 
     implementation 'com.chibatching.kotpref:kotpref:2.9.2'//preferences library
-
+    implementation 'org.koin:koin-android:2.0.1'//dependency injection
+    implementation 'org.koin:koin-android-scope:2.0.1'
+    implementation 'org.koin:koin-android-viewmodel:2.0.1'
 
 
 

@@ -11,13 +11,13 @@ class SkiAreaDetailsConverter {
     private val detailsType = object : TypeToken<SkiAreaDetails>() {}.type
 
     @TypeConverter
-    fun stringToDetails(data: String?): SkiAreaDetails {
+    fun stringToDetails(data: String?): SkiAreaDetails? {
 
         return gson.fromJson(data, detailsType)
     }
 
     @TypeConverter
-    fun detailsToString(skiAreaDetails: SkiAreaDetails): String {
+    fun detailsToString(skiAreaDetails: SkiAreaDetails?): String {
         return gson.toJson(skiAreaDetails, detailsType)
     }
 }

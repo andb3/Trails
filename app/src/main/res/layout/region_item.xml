@@ -14,7 +14,7 @@
         android:layout_marginTop="16dp"
         android:layout_weight="1"
         android:text="@string/ski_region_placeholder"
-        android:textColor="@android:color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/regionMaps"
         app:layout_constraintStart_toStartOf="parent"

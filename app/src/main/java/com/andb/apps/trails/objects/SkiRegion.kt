@@ -6,28 +6,30 @@ import org.jetbrains.annotations.Nullable
 import retrofit2.http.Field
 
 @Entity
-open class SkiRegion(
+data class SkiRegion(
     @PrimaryKey
     @ColumnInfo(name = "regionID")
+    @Json(name = "id")
     val id: Int,
 
     @ColumnInfo(name = "regionName")
+    @Json(name = "name")
     val name: String,
 
     @ColumnInfo(name = "regionMaps")
-    @field:Json(name = "map_count")
+    @Json(name = "map_count")
     val mapCount: Int,
 
     @ColumnInfo(name = "regionChildIDs")
-    @field:Json(name = "child_regions")
-    val childIDs: ArrayList<Int>,
+    @Json(name = "child_regions")
+    val childIDs: List<Int>,
 
     @ColumnInfo(name = "regionAreaIDs")
-    @field:Json(name = "child_areas")
-    val areaIDs: ArrayList<Int>,
+    @Json(name = "child_areas")
+    val areaIDs: List<Int>,
 
     @ColumnInfo(name = "regionParentID")
-    @field:Json(name = "parent_id")
+    @Json(name = "parent_id")
     val parentID: Int
 ) {
 

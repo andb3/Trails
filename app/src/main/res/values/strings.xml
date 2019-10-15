@@ -15,6 +15,12 @@
     <string name="menu_region_europe">Europe</string>
     <string name="menu_region_asia">Asia</string>
     <string name="menu_region_oceania">Oceania</string>
+    <string-array name="base_regions">
+        <item>@string/menu_region_americas</item>
+        <item>@string/menu_region_europe</item>
+        <item>@string/menu_region_asia</item>
+        <item>@string/menu_region_oceania</item>
+    </string-array>
     <string name="switch_region_text">Switch</string>
     <string name="favorites_maps_divider_text">Maps</string>
     <string name="favorites_area_divider_text">Areas</string>
@@ -37,6 +43,23 @@
     <string name="offline_error_refresh">Refresh</string>
     <string name="downloading_notification_title">Downloading Map: %1$s %2$d</string>
     <string name="settings_title">Settings</string>
+    <string name="settings_starting_region">Starting Region</string>
+    <string-array name="settings_sort_options">
+        <item>Alphabetical</item>
+        <item>Map Count</item>
+    </string-array>
+    <string name="settings_sort_regions">Sort Regions</string>
+    <string name="settings_sort_areas">Sort Areas</string>
+    <string name="settings_theme_night_mode_title">Dark Mode</string>
+    <string-array name="settings_theme_night_mode_options">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Follow Battery Saver</item>
+        <item>Follow System</item>
+        <item>Time-Based</item>
+    </string-array>
+    <string name="settings_about">About</string>
+    <string name="settings_powered_by">Powered by SkiMap.org</string>
 
 
 </resources>

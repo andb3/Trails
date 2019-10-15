@@ -7,6 +7,7 @@ import kotlinx.coroutines.Deferred
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface MapService {
     /**Get amount of maps in backend**/
@@ -22,8 +23,8 @@ interface MapService {
     suspend fun getMap(@Path("mapID") mapID: Int): SkiMap
 
     /**Get updated maps from backend**/
-    @GET("maps/new?last={lastUpdate}")
-    suspend fun getMapUpdates(@Path("lastUpdate") lastUpdate: Long): List<SkiMap>
+    @GET("maps/new")
+    suspend fun getMapUpdates(@Query("last") lastUpdate: Long): List<SkiMap>
 }
 
 interface AreaService {
@@ -40,8 +41,8 @@ interface AreaService {
     suspend fun getArea(@Path("areaID") areaID: Int): SkiArea
 
     /**Get updated areas from backend**/
-    @GET("areas/new?last={lastUpdate}")
-    suspend fun getAreaUpdates(@Path("lastUpdate") lastUpdate: Long): List<SkiArea>
+    @GET("areas/new")
+    suspend fun getAreaUpdates(@Query("last") lastUpdate: Long): List<SkiArea>
 }
 
 interface RegionService {
@@ -58,6 +59,6 @@ interface RegionService {
     suspend fun getRegion(@Path("regionID") regionID: Int): SkiRegion
 
     /**Get updated regions from backend**/
-    @GET("regions/new?last={lastUpdate}")
-    suspend fun getRegionUpdates(@Path("lastUpdate") lastUpdate: Long): List<SkiRegion>
+    @GET("regions/new")
+    suspend fun getRegionUpdates(@Query("last") lastUpdate: Long): List<SkiRegion>
 }

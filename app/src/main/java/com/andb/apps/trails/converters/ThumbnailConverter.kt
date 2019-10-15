@@ -7,19 +7,19 @@ import com.google.gson.reflect.TypeToken
 
 class ThumbnailListConverter {
     private val gson = Gson()
-    private val listType = object : TypeToken<java.util.ArrayList<Thumbnail>>() {}.type
+    private val listType = object : TypeToken<List<Thumbnail>>() {}.type
 
 
     @TypeConverter
-    fun stringToDetails(data: String?): ArrayList<Thumbnail> {
+    fun stringToDetails(data: String?): List<Thumbnail> {
         if (data == null) {
-            return ArrayList()
+            return listOf()
         }
         return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun detailsToString(thumbnails: ArrayList<Thumbnail>): String {
+    fun detailsToString(thumbnails: List<Thumbnail>): String {
         return gson.toJson(thumbnails, listType)
     }
 }

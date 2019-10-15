@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -13,6 +14,7 @@ import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.repository.AreasRepo
+import com.andb.apps.trails.settings.SettingsFragment
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
 import com.andb.apps.trails.views.AreaItem
@@ -117,8 +119,20 @@ class FavoritesFragment : Fragment() {
         }
         .bind { _ ->
             when (itemViewType) {
-                MAP_DIVIDER_TYPE -> favoriteDividerText.text = getString(R.string.favorites_maps_divider_text)
-                AREA_DIVIDER_TYPE -> favoriteDividerText.text = getString(R.string.favorites_area_divider_text)
+                MAP_DIVIDER_TYPE -> {
+                    favoriteDividerSettings.visibility = View.VISIBLE
+                    favoriteDividerSettings.setOnClickListener {
+                        parentFragmentManager.commit {
+                            addToBackStack("settings")
+                            add(R.id.settingsHolder, SettingsFragment())
+                        }
+                    }
+                    favoriteDividerText.text = getString(R.string.favorites_maps_divider_text)
+                }
+                AREA_DIVIDER_TYPE -> {
+                    favoriteDividerSettings.visibility = View.GONE
+                    favoriteDividerText.text = getString(R.string.favorites_area_divider_text)
+                }
                 MAP_ITEM_TYPE -> {
                     if(adapterPosition>=0) {
                         val map = maps[adapterPosition - 1 /*divider*/]

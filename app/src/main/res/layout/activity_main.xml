@@ -5,27 +5,49 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
 
-
-    <view
-        android:id="@+id/pager"
-        class="com.andb.apps.trails.views.NonSwipeViewPager"
-        android:layout_width="0dp"
+    <FrameLayout
+        android:id="@+id/exploreAreaReplacement"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/navigation"
+        android:elevation="64dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="8dp">
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/mapViewHolder"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:elevation="72dp"
+        android:fitsSystemWindows="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:swipeable="false" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/settingsHolder"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:elevation="78dp"
+        android:fitsSystemWindows="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/navigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#FAFAFA"
+        android:background="?attr/colorPrimary"
         android:elevation="16dp"
         android:fitsSystemWindows="true"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -58,26 +80,15 @@
             android:text="@string/title_search" />
     </com.google.android.material.tabs.TabLayout>
 
-    <FrameLayout
-        android:id="@+id/exploreAreaReplacement"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:elevation="64dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="8dp">
-
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/mapViewHolder"
+    <view
+        android:id="@+id/pager"
+        class="com.andb.apps.trails.views.NonSwipeViewPager"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:elevation="72dp"
-        android:fitsSystemWindows="true"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:swipeable="false" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

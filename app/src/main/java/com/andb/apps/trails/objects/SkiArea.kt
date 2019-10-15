@@ -1,15 +1,13 @@
 package com.andb.apps.trails.objects
 
-import androidx.room.*
-import com.andb.apps.trails.converters.IDListConverter
-import com.andb.apps.trails.converters.SkiAreaDetailsConverter
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.andb.apps.trails.repository.MapsRepo
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.squareup.moshi.Json
 
 @Entity
-open class SkiArea(
+data class SkiArea(
     @PrimaryKey
     @ColumnInfo(name = "areaID")
     val id: Int,
@@ -17,14 +15,15 @@ open class SkiArea(
     @ColumnInfo(name = "areaName")
     val name: String,
     @ColumnInfo(name = "areaDetails")
-    @field:Json(name = "info")
-    val details: SkiAreaDetails,
-    @ColumnInfo(name = "areaMaps")
-    val maps: ArrayList<Int>,
-    @field:Json(name = "parent_ids")
-    val parentIDs: ArrayList<Int>,
+    @Json(name = "info")
+    val details: SkiAreaDetails?,
 
-    @field:Json(name = "favorite")
+    @ColumnInfo(name = "areaMaps")
+    val maps: List<Int>,
+    @Json(name = "parent_ids")
+    val parentIDs: List<Int>,
+
+    @Json(name = "favorite")
     var favorite: Boolean = false
 ) {
     suspend fun getMapPreviewUrl(): String? {
@@ -44,7 +43,9 @@ class SkiAreaDetails(
     val liftCount: Int? = null,
     val runCount: Int? = null,
     val openingYear: Int? = null,
-    @field:Json(name = "officialWebsite")
+    @Json(name = "officialWebsite")
     val website: String? = null,
     val operatingStatus: String? = null
-)
+){
+    constructor() : this(null, null, null, null, null)
+}

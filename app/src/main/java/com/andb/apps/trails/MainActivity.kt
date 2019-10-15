@@ -1,27 +1,18 @@
 package com.andb.apps.trails
 
-import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
-import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.pages.FavoritesFragment
-import com.andb.apps.trails.repository.AreasRepo
-import com.andb.apps.trails.repository.MapsRepo
-import com.andb.apps.trails.repository.RegionsRepo
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
-    val viewModel by lazy { ViewModelProviders.of(this).get(MainActivityViewModel::class.java) }
+    val viewModel: MainActivityViewModel by viewModel()
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
@@ -54,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         if (viewModel.exploreFragment.isAdded) {
-            viewModel.exploreFragment.viewModel.setBaseRegion(1)
+            //viewModel.exploreFragment.viewModel.setBaseRegion(1)
         }
         viewModel.favoritesFragment.refresh(viewModel.favoritesFragment.isAdded)
 
@@ -82,8 +73,9 @@ class MainActivity : AppCompatActivity() {
         setStatusBarColors(this)
         if (supportFragmentManager.backStackEntryCount > 0) {
             super.onBackPressed()
-        } else if (viewModel.exploreFragment.viewModel.isBackPossible() && pager.currentItem == 1) {
-            viewModel.exploreFragment.viewModel.backRegion()
+        } else if (viewModel.exploreFragment.isBackPossible() && pager.currentItem == 1) {
+            //viewModel.exploreFragment.viewModel.backRegion()
+            viewModel.exploreFragment.backRegion()
         } else {
             super.onBackPressed()
         }

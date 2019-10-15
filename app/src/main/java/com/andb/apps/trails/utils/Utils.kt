@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -63,9 +64,11 @@ fun <T> Collection<T>.equalsUnordered(other: Collection<T>): Boolean {
     return this.containsAll(other) && other.containsAll(this)
 }
 
+/*
 fun <T> MutableLiveData<T>.refresh() {
     this.value = this.value
 }
+*/
 
 fun dpToPx(dp: Int): Int {
     val scale = Resources.getSystem().displayMetrics.density
@@ -168,7 +171,7 @@ fun filenameFromURL(url: String): String{
     return url.drop("https://skimap.org/data/".length).replace('/', '.')
 }
 
-class InitialLiveData<T>(private val initialValue: T): MutableLiveData<T>(){
+class InitialLiveData<T>(private val initialValue: T): MediatorLiveData<T>(){
     override fun getValue(): T {
         return super.getValue() ?: initialValue
     }

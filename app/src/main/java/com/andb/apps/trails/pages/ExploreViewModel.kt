@@ -1,27 +1,45 @@
 package com.andb.apps.trails.pages
 
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.andb.apps.trails.objects.SkiArea
-import com.andb.apps.trails.objects.SkiRegion
+import com.andb.apps.trails.objects.SkiRegionTree
+import com.andb.apps.trails.objects.toTree
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.RegionsRepo
 import com.andb.apps.trails.utils.*
-import jonathanfinerty.once.Once
-import java.util.concurrent.TimeUnit
 
 class ExploreViewModel : ViewModel() {
-    private val regionStack = ListLiveData<SkiRegion>()
+
+    var parents = listOf<SkiRegionTree>()
+    var regionStack = mutableListOf<SkiRegionTree>()
     var baseRegionOffline = -1
 
-    fun getParentRegionName(): LiveData<String> {
+
+    fun setup(regionID: Int, onSetup: ()->Unit) {
+        newIoThread {
+            parents = RegionsRepo.getParents().map { it.toTree() }
+            Log.d("exploreViewModel setup", "parents: $parents")
+            setBaseRegion(regionID)
+        }
+    }
+
+    val parent = object : MediatorLiveData<SkiRegionTree>() {
+        init {
+            value = regionStack.lastOrNull()
+            /*addSource(regionStack){
+                value = it.lastOrNull()
+            }*/
+        }
+    }
+
+/*    fun getParentRegionName(): LiveData<String> {
         return Transformations.map(regionStack) {
             return@map it.lastOrNull()?.name ?: "Offline"
         }
-    }
+    }*/
+/*
 
     val childRegions = Transformations.switchMap(regionStack) { regionStack ->
         Log.d("liveDataChanged", "regions changed on stack update")
@@ -40,92 +58,89 @@ class ExploreViewModel : ViewModel() {
         return@switchMap AreasRepo.getAreasFromRegion(regionStack.last())
     }
 
-    /**LiveData constantly updating with chips for the current child regions. Chips can have a child region or area, or be null for both to show offline**/
+    */
+    /**LiveData constantly updating with chips for the current child regions. Chips can have a child region or area, or be null for both to show offline**//*
+
     val chips = ChipLiveData(childRegions)
 
     class ChipLiveData(source: LiveData<List<SkiRegion>>) : ListLiveData<ChipItem>() {
         init {
-            addSource(source) { regions ->
+            */
+/*addSource(source) { regions ->
                 regions.forEach { region ->
-                    if (region.childIDs.isNotEmpty()) {
-                        addSource(RegionsRepo.getRegionsFromParent(region)) { childChildren ->
-                            addAll(childChildren.sortedBy { it.mapCount }.take(2).map { ChipItem(region.id, region = it) })
-                        }
-                    } else {
-                        addSource(AreasRepo.getAreasFromRegion(region)) { childAreas ->
-                            addAll(childAreas.sortedBy { it.maps.size }.take(2).map { ChipItem(region.id, area = it) })
+                    newIoThread {
+                        if (region.childIDs.isNotEmpty()) {
+                            addSource(RegionsRepo.getRegionsFromParent(region)) { childChildren ->
+                                addAll(childChildren.sortedByDescending { it.mapCount }.take(2).map { ChipItem(region.id, region = it) })
+                            }
+                        } else {
+                            addSource(AreasRepo.getAreasFromRegion(region)) { childAreas ->
+                                addAll(childAreas.sortedByDescending { it.maps.size }.take(2).map { ChipItem(region.id, area = it) })
+                            }
                         }
                     }
+
                 }
-            }
+            }*//*
+
         }
     }
+*/
 
-    //TODO: convert to objects updated w/ this method
-    val loading = Transformations.map(regionStack) { _ ->
-        return@map !Once.beenDone(TimeUnit.DAYS, 1, "regionLoad")
+    val loading = InitialLiveData(false).apply {
+        addSource(RegionsRepo.loading) { this.value = it }
+        addSource(AreasRepo.loading) { this.value = it }
     }
 
 
-    val offline: LiveData<Boolean> = Transformations.switchMap(childRegions) regionSwitchMap@{ childRegions ->
-        return@regionSwitchMap Transformations.switchMap(childAreas) areaSwitchMap@{ childAreas ->
-            return@areaSwitchMap Transformations.map(regionStack) { regionStack ->
-                val parentRegion = regionStack.lastOrNull() ?: return@map true
-                return@map parentRegion.childIDs != childRegions.map { it.id } || parentRegion.areaIDs != childAreas.map { it.id }
-            }
-        }
-    }
+/*    val offline: LiveData<Boolean> = Transformations.map(parent) { parent ->
+        val parentRegion = parent ?: return@map true
+        return@map parentRegion.offline
+    }*/
 
     fun setBaseRegion(id: Int) {
-        regionStack.value = emptyList()
-        newIoThread {
-            val region = RegionsRepo.getRegionByID(id)
-            mainThread {
-                if (region != null) {
-                    baseRegionOffline = -1
-                    resetStackWith(region)
-                    Log.d("baseRegionLoaded", "id: $id")
-                } else {
-                    baseRegionOffline = id
-                    regionStack.refresh()
-                    Log.d("baseRegionOffline", "id: $id")
-                }
-            }
+        Log.d("setBaseRegion", "loading: ${loading.value}, parents: $parents")
+        if (!loading.value) {
+            resetStackWith(parents.first { it.id == id })
+            Log.d("setBaseRegion", "new regionStack: ${regionStack}")
+        }else{
+            baseRegionOffline = id
         }
     }
 
-    private fun resetStackWith(region: SkiRegion) {
-        regionStack.value = listOf(region)
-    }
-
-    private fun addRegionToStack(region: SkiRegion) {
+    private fun resetStackWith(region: SkiRegionTree) {
+        regionStack.clear()
         regionStack.add(region)
+        //parent.value = regionStack.lastOrNull()
     }
 
-
-    fun nextRegion(region: SkiRegion) {
-        addRegionToStack(region)
+    fun nextRegion(region: SkiRegionTree) {
+        regionStack.add(region)
+        //parent.value = regionStack.lastOrNull()
     }
 
     fun backRegion() {
         regionStack.drop(1)
+        //parent.value = regionStack.lastOrNull()
     }
 
+/*
     fun refresh() {
         if (!baseRegionOffline.isNegative()) {
             Log.d("refresh", "base")
             setBaseRegion(baseRegionOffline)
         }
         Log.d("refresh", "children")
-        regionStack.refresh() //by resending the value, the switchMap will rerun for the children
+        //parent.value = regionStack.lastOrNull() //by resending the value, the switchMap will rerun for the children
     }
+*/
 
     fun isFirstLoad(): Boolean {
-        return regionStack.value.isEmpty()
+        return regionStack.isEmpty()
     }
 
     fun isBaseRegion(): Boolean {
-        return regionStack.value.size <= 1
+        return regionStack.size <= 1
     }
 
     fun isBackPossible(): Boolean {
@@ -207,5 +222,5 @@ open class ListLiveData<T>(initialList: List<T> = emptyList()) : MediatorLiveDat
 }
 
 
-class ChipItem(val parentID: Int, val region: SkiRegion? = null, val area: SkiArea? = null)
+class ChipItem(val parentID: Int, val region: SkiRegionTree? = null, val area: SkiArea? = null)
 

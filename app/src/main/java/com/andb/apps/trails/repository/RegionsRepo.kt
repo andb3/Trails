@@ -1,55 +1,62 @@
 package com.andb.apps.trails.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.andb.apps.trails.Prefs
+import com.andb.apps.trails.database.RegionsDao
 import com.andb.apps.trails.database.regionsDao
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiRegion
 import com.andb.apps.trails.utils.InitialLiveData
 import com.andb.apps.trails.utils.RegionService
 import com.andb.apps.trails.utils.newIoThread
+import org.koin.core.KoinComponent
+import org.koin.core.inject
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
-object RegionsRepo {
+object RegionsRepo : KoinComponent {
 
-    private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("https://skimap.org/")//TODO: change to backend
-        .addConverterFactory(MoshiConverterFactory.create())
-        .build()
+    private val retrofit: Retrofit by inject()
 
     private val regionService = retrofit.create(RegionService::class.java)
 
-    val loading = InitialLiveData(true)
+    val loading = InitialLiveData(false)
+    val regionsDao: RegionsDao by inject()
 
-    fun getRegionsFromParent(parent: SkiRegion): LiveData<List<SkiRegion>> {
-        return regionsDao().getAllFromParent(parent.id)
+    val regions by lazy { regionsDao.getAllStatic() }
+
+    fun getRegionsFromParent(parent: SkiRegion): List<SkiRegion> {
+        return regions.filter { it.parentID == parent.id }
     }
 
-    suspend fun getRegionByID(id: Int): SkiRegion? {
-        return regionsDao().getRegionByID(id)
+    fun getParents(): List<SkiRegion>{
+        return regions.filter { (1..4).contains(it.id) }
     }
 
-    suspend fun findAreaParents(area: SkiArea): List<SkiRegion> {
+    fun getRegionByID(id: Int): SkiRegion? {
+        return regions.find { it.id == id }
+    }
+
+    fun findAreaParents(area: SkiArea): List<SkiRegion> {
         return area.parentIDs.mapNotNull { getRegionByID(it) }
     }
 
     /**Refreshes regions from backend. Returns boolean indicating whether loading was successful**/
-    fun updateRegions(): Boolean{
-        try{
-            newIoThread {
-                if(regionsDao().getAllStatic().size < regionService.getRegionCount()){
-                    val regions = regionService.getAllRegions()
-                    regionsDao().insertMultipleRegions(regions)
-                }else{
-                    val newRegions = regionService.getRegionUpdates(Prefs.lastRegionsUpdate)
-                    regionsDao().insertMultipleRegions(newRegions)
-                }
-                Prefs.lastRegionsUpdate = System.currentTimeMillis()
+    suspend fun updateRegions(): Boolean {
+        try {
+            if (regionsDao.getAllStatic().size < regionService.getRegionCount()) {
+                val regions = regionService.getAllRegions()
+                regionsDao.insertMultipleRegions(regions)
+            } else {
+                val newRegions = regionService.getRegionUpdates(Prefs.lastRegionsUpdate)
+                regionsDao.insertMultipleRegions(newRegions)
             }
+            Prefs.lastRegionsUpdate = System.currentTimeMillis()
+
             return true
-        }catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
             return false
         }

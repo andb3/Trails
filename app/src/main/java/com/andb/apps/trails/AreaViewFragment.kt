@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
@@ -24,6 +23,7 @@ import com.github.rongi.klaster.Klaster
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.area_layout.*
 import kotlinx.android.synthetic.main.offline_item.view.*
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class AreaViewFragment : Fragment() {
 
@@ -32,9 +32,7 @@ class AreaViewFragment : Fragment() {
     private var maps = listOf<SkiMap>()
     private var areaKey = -1
 
-    val viewModel: AreaViewModel by lazy {
-        ViewModelProviders.of(this).get(AreaViewModel::class.java)
-    }
+    private val viewModel: AreaViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +75,7 @@ class AreaViewFragment : Fragment() {
 
         if (newArea != null) {
             areaViewName.text = newArea.name
-            newArea.details.apply {
+            newArea.details?.apply {
                 areaLiftCount.showIfAvailable(liftCount, R.string.area_lift_count_text)
                 areaRunCount.showIfAvailable(runCount, R.string.area_run_count_text)
                 areaOpeningYear.showIfAvailable(openingYear, R.string.area_opening_year_text)

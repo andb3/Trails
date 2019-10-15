@@ -19,6 +19,8 @@ interface RegionsDao{
     @Query("SELECT * FROM SkiRegion WHERE `regionID` = :regionID")
     fun getRegionByID(regionID: Int): SkiRegion?
 
+    /*@Query("SELECT * FROM SkiRegion WHERE `regionParentID` = :parentID")
+    fun getAllFromParent(parentID: Int): LiveData<List<SkiRegion>>*/
     @Query("SELECT * FROM SkiRegion WHERE `regionParentID` = :parentID")
     fun getAllFromParent(parentID: Int): LiveData<List<SkiRegion>>
 

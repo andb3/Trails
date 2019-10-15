@@ -7,18 +7,18 @@ import com.google.gson.reflect.TypeToken
 class IDListConverter {
 
     val gson = Gson()
-    private val listType = object : TypeToken<java.util.ArrayList<Int>>() {}.type
+    private val listType = object : TypeToken<List<Int>>() {}.type
 
     @TypeConverter
-    fun stringToDetails(data: String?): ArrayList<Int> {
+    fun stringToDetails(data: String?): List<Int>? {
         if (data == null) {
-            return ArrayList()
+            return listOf()
         }
         return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun detailsToString(idList: ArrayList<Int>): String {
+    fun detailsToString(idList: List<Int>?): String {
         return gson.toJson(idList, listType)
     }
 }

@@ -7,14 +7,14 @@ import androidx.room.TypeConverters
 import com.andb.apps.trails.converters.ThumbnailListConverter
 
 @Entity
-class SkiMap(
+data class SkiMap(
     @PrimaryKey
     @ColumnInfo(name = "map_id")
     val id: Int,
     @ColumnInfo(name = "map_year")
     val year: Int,
     @ColumnInfo(name = "map_thumbs")
-    val thumbnails: ArrayList<Thumbnail>,
+    val thumbnails: List<Thumbnail>,
     @ColumnInfo(name = "map_url")
     val url: String,
     @ColumnInfo(name = "map_parent")
