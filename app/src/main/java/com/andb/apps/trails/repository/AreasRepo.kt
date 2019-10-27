@@ -36,6 +36,14 @@ object AreasRepo : KoinComponent {
         return areasDao.getAreaByID(id)
     }
 
+    fun getAreaFromMap(id: Int): SkiArea?{
+        return areas.find { it.maps.contains(id) }
+    }
+
+    fun getFavoriteAreas(): LiveData<List<SkiArea>>{
+        return areasDao.getFavorites()
+    }
+
     /**Refreshes areas from backend. Returns boolean indicating whether loading was successful**/
     suspend fun updateAreas(): Boolean {
         try {

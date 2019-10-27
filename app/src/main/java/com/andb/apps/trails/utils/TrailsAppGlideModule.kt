@@ -1,4 +1,4 @@
-package com.andb.apps.trails.views
+package com.andb.apps.trails.utils
 
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.module.AppGlideModule

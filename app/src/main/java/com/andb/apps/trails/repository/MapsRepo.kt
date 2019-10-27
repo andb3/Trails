@@ -28,14 +28,17 @@ object MapsRepo : KoinComponent{
         return mapsDao.getMapsFromParent(parent.id)
     }
 
-
     suspend fun getMapByID(id: Int): SkiMap? {
         return mapsDao.getMapByID(id)
     }
 
+    fun getFavoriteMaps(): LiveData<List<SkiMap>>{
+        return mapsDao.getFavorites()
+    }
+
     /**Refreshes maps from backend. Returns boolean indicating whether loading was successful**/
     fun updateMaps(): Boolean {
-        /*try {
+        try {
             newIoThread {
                 if (mapsDao.getAllStatic().size < mapService.getMapCount()) {
                     val maps = mapService.getAllMaps()
@@ -50,8 +53,7 @@ object MapsRepo : KoinComponent{
         } catch (e: Exception) {
             e.printStackTrace()
             return false
-        }*/
-        return false
+        }
     }
 
 }

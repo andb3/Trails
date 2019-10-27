@@ -3,8 +3,7 @@ package com.andb.apps.trails.objects
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
-import com.andb.apps.trails.converters.ThumbnailListConverter
+import com.squareup.moshi.Json
 
 @Entity
 data class SkiMap(
@@ -16,8 +15,10 @@ data class SkiMap(
     @ColumnInfo(name = "map_thumbs")
     val thumbnails: List<Thumbnail>,
     @ColumnInfo(name = "map_url")
+    @Json(name = "image_url")
     val url: String,
     @ColumnInfo(name = "map_parent")
+    @Json(name = "parent_id")
     val parentID: Int) {
 
     @ColumnInfo(name = "map_favorite")
@@ -27,5 +28,5 @@ data class SkiMap(
 
 }
 
-class Thumbnail(val width: Int, val height: Int, val url: String)
+data class Thumbnail(val width: Int, val height: Int, val url: String)
 

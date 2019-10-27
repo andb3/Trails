@@ -4,8 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/areaLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/areaViewDim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="@android:color/black"
+        android:clickable="true"
+        android:descendantFocusability="blocksDescendants"
+        android:fitsSystemWindows="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+    </FrameLayout>
 
     <ProgressBar
         android:id="@+id/areaLoadingIndicator"
@@ -19,70 +32,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/areaNested"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/areaViewName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="32dp"
-                android:layout_marginEnd="32dp"
-                android:layout_marginBottom="32dp"
-                android:text="@string/map_area_name_placeholder"
-                android:textColor="@android:color/black"
-                android:textSize="36sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/mapListRecycler"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:transitionName="areaViewName"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/mapListRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp"
-                android:layoutAnimation="@anim/rv_slide_from_bottom_layout_anim"
-                android:nestedScrollingEnabled="true"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/areaViewName">
-
-            </androidx.recyclerview.widget.RecyclerView>
-
-            <include
-                android:id="@+id/areaOfflineItem"
-                layout="@layout/offline_item"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center_vertical"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:visibility="gone" />
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
 
 
     <androidx.cardview.widget.CardView
@@ -119,27 +68,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                tools:text="Run Count"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/areaInfo" />
+                app:layout_constraintTop_toBottomOf="@+id/areaInfo"
+                tools:text="Run Count" />
 
             <TextView
                 android:id="@+id/areaLiftCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                tools:text="Lift Count"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/areaRunCount" />
+                app:layout_constraintTop_toBottomOf="@+id/areaRunCount"
+                tools:text="Lift Count" />
 
             <TextView
                 android:id="@+id/areaOpeningYear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                tools:text="Opening Year"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/areaLiftCount" />
+                app:layout_constraintTop_toBottomOf="@+id/areaLiftCount"
+                tools:text="Opening Year" />
 
             <TextView
                 android:id="@+id/areaWebsite"
@@ -147,23 +96,88 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginBottom="8dp"
-                tools:text="Website"
-                android:linksClickable="true"
                 android:autoLink="web"
+                android:linksClickable="true"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/areaOpeningYear" />
+                app:layout_constraintTop_toBottomOf="@+id/areaOpeningYear"
+                tools:text="Website" />
+
             <TextView
                 android:id="@+id/areaViewRegions"
-                tools:text="Regions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginBottom="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/areaWebsite"/>
+                app:layout_constraintTop_toBottomOf="@+id/areaWebsite"
+                tools:text="Regions" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/areaNested"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:attr/colorBackground"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/areaViewName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="32dp"
+                android:text="@string/map_area_name_placeholder"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:transitionName="areaViewName"
+                app:layout_constraintBottom_toTopOf="@+id/mapListRecycler"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mapListRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:layoutAnimation="@anim/rv_slide_from_bottom_layout_anim"
+                android:nestedScrollingEnabled="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/areaViewName">
+
+            </androidx.recyclerview.widget.RecyclerView>
+
+            <include
+                android:id="@+id/areaOfflineItem"
+                layout="@layout/offline_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|center_vertical"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/areaViewFab"
@@ -180,19 +194,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:rippleColor="@android:color/white"
         app:srcCompat="@drawable/ic_info_outline_black_24dp" />
-
-    <FrameLayout
-        android:id="@+id/areaViewDim"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"
-        android:background="@android:color/black"
-        android:descendantFocusability="blocksDescendants"
-        android:fitsSystemWindows="true"
-        android:clickable="true"
-        android:visibility="gone"
-        android:focusable="true">
-
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

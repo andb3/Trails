@@ -7,14 +7,13 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.room.Room
 import com.andb.apps.trails.database.Database
 import com.andb.apps.trails.database.MapsDao
-import com.andb.apps.trails.pages.ExploreFragment
-import com.andb.apps.trails.pages.ExploreViewModel
-import com.andb.apps.trails.pages.FavoritesFragment
-import com.andb.apps.trails.pages.SearchFragment
+import com.andb.apps.trails.pages.*
 import com.andb.apps.trails.repository.AreasRepo
 import com.andb.apps.trails.repository.MapsRepo
 import com.andb.apps.trails.repository.MockInterceptor
 import com.andb.apps.trails.repository.RegionsRepo
+import com.andb.apps.trails.settings.SettingsFragment
+import com.andb.apps.trails.settings.SettingsViewModel
 import com.andb.apps.trails.utils.newIoThread
 import com.chibatching.kotpref.Kotpref
 import com.squareup.moshi.Moshi
@@ -45,10 +44,13 @@ class App : Application() {
         single { FavoritesFragment() }
         single { ExploreFragment() }
         single { SearchFragment() }
+        single { SettingsFragment() }
 
         viewModel { MainActivityViewModel(get(), get(), get()) }
-        viewModel { AreaViewModel() }
+        viewModel { FavoritesViewModel() }
         viewModel { ExploreViewModel() }
+        viewModel { AreaViewModel() }
+        viewModel { SettingsViewModel(androidContext() as Application) }
 
         single {
             Moshi.Builder()
@@ -86,6 +88,7 @@ class App : Application() {
 
         Log.d("once", "regionLoad: ${Once.beenDone(TimeUnit.DAYS, 1, "regionLoad")}")
         Log.d("once", "areaLoad: ${Once.beenDone(TimeUnit.DAYS, 1, "areaLoad")}")
+        Log.d("once", "mapLoad: ${Once.beenDone(TimeUnit.DAYS, 1, "mapLoad")}")
 
         if (!Once.beenDone(TimeUnit.DAYS, 1, "regionLoad")) {
             RegionsRepo.loading.value = true

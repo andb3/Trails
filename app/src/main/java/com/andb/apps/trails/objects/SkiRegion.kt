@@ -22,11 +22,11 @@ data class SkiRegion(
 
     @ColumnInfo(name = "regionChildIDs")
     @Json(name = "child_regions")
-    val childIDs: List<Int>,
+    val childRegionIDs: List<Int>,
 
     @ColumnInfo(name = "regionAreaIDs")
     @Json(name = "child_areas")
-    val areaIDs: List<Int>,
+    val childAreaIDs: List<Int>,
 
     @ColumnInfo(name = "regionParentID")
     @Json(name = "parent_id")

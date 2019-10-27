@@ -5,17 +5,12 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import com.andb.apps.trails.converters.IDListConverter
-import com.andb.apps.trails.converters.SkiAreaDetailsConverter
-import com.andb.apps.trails.converters.ThumbnailListConverter
-import com.andb.apps.trails.objects.*
-import dev.matrix.roomigrant.GenerateRoomMigrations
+import com.andb.apps.trails.objects.SkiArea
+import com.andb.apps.trails.objects.SkiMap
+import com.andb.apps.trails.objects.SkiRegion
 
 @Database(entities = [SkiMap::class, SkiArea::class, SkiRegion::class], version = 1, exportSchema = true)
-@TypeConverters(value = [ThumbnailListConverter::class, IDListConverter::class, SkiAreaDetailsConverter::class])
-@GenerateRoomMigrations
+@TypeConverters(value = [Converters::class])
 abstract class Database : RoomDatabase() {
     abstract fun mapsDao(): MapsDao
     abstract fun areasDao(): AreasDao

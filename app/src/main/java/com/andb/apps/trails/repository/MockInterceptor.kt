@@ -7,7 +7,7 @@ import okhttp3.*
 
 
 
-class MockInterceptor(val appContext: Context) : Interceptor {
+class MockInterceptor(private val appContext: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val uri = chain.request().url().uri().toString()
         Log.d("mockInterceptor", "uri: $uri")
@@ -22,8 +22,13 @@ class MockInterceptor(val appContext: Context) : Interceptor {
                     val ins = appContext.resources.openRawResource(appContext.resources.getIdentifier("areas", "raw", appContext.packageName))
                     ins.bufferedReader().use { it.readText() }
                 }
+                uri.endsWith("/maps")->{
+                    val ins = appContext.resources.openRawResource(appContext.resources.getIdentifier("maps", "raw", appContext.packageName))
+                    ins.bufferedReader().use { it.readText() }
+                }
                 uri.endsWith("/regions/count") ->{ "338" }
                 uri.endsWith("/areas/count")->{ "4420" }
+                uri.endsWith("/maps/count")->{ "79" }
                 else -> ""
             }
             //Log.d("mockInterceptor", "response: $responseString")

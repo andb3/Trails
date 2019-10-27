@@ -8,10 +8,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.andb.apps.trails.*
-import de.Maxr1998.modernpreferences.helpers.onClicked
-import de.Maxr1998.modernpreferences.helpers.pref
-import de.Maxr1998.modernpreferences.helpers.screen
-import de.Maxr1998.modernpreferences.helpers.subScreen
+import de.Maxr1998.modernpreferences.helpers.*
 
 object SettingsLayout {
     fun create(context: Context) = screen(context){
@@ -84,6 +81,15 @@ object SettingsLayout {
         subScreen {
             titleRes = R.string.settings_about
             iconRes = R.drawable.ic_info_outline_black_24dp
+
+            title("about_title"){
+                titleRes = R.string.settings_about
+            }
+
+            categoryHeader("about_licenses"){
+                titleRes = R.string.settings_licenses
+            }
+
         }
 
         pref("powered_by"){
@@ -93,6 +99,18 @@ object SettingsLayout {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://SkiMap.org"))
                 context.startActivity(intent)
                 return@onClicked true
+            }
+        }
+
+        if (BuildConfig.DEBUG){
+            pref("test_activity"){
+                title = "Test"
+                iconRes = R.drawable.ic_settings_black_24dp
+                onClicked {
+                    val intent = Intent(context, TestActivity::class.java)
+                    context.startActivity(intent)
+                    return@onClicked true
+                }
             }
         }
     }

@@ -11,10 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.andb.apps.trails.R
 import de.Maxr1998.modernpreferences.PreferencesAdapter
 import kotlinx.android.synthetic.main.settings_layout.*
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class SettingsFragment : Fragment() {
-    private val viewModel: SettingsViewModel by viewModels()
-    private val preferencesAdapter by lazy { PreferencesAdapter(SettingsLayout.create(requireContext())) }
+    private val viewModel: SettingsViewModel by viewModel()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.settings_layout, container, false)
@@ -25,9 +25,14 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         settingsRecycler.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = preferencesAdapter
+            adapter = viewModel.preferencesAdapter
         }
 
         Log.d("settingsFragment", "adapter: ${settingsRecycler.adapter}")
+    }
+
+    fun canGoBack() = viewModel.preferencesAdapter.isInSubScreen()
+    fun goBack(){
+        viewModel.preferencesAdapter.goBack()
     }
 }

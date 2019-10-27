@@ -22,6 +22,8 @@ import com.andb.apps.trails.views.MapItem
 import com.github.rongi.klaster.Klaster
 import kotlinx.android.synthetic.main.favorites_divider.*
 import kotlinx.android.synthetic.main.favorites_layout.*
+import org.koin.android.ext.android.get
+import org.koin.android.viewmodel.ext.android.viewModel
 
 const val MAP_DIVIDER_TYPE = 28903
 const val AREA_DIVIDER_TYPE = 23890
@@ -30,10 +32,8 @@ const val AREA_ITEM_TYPE = 98123
 
 class FavoritesFragment : Fragment() {
 
-    val favoritesAdapter by lazy { favoritesAdapter() }
-    private val viewModel: FavoritesViewModel by lazy {
-        ViewModelProviders.of(this).get(FavoritesViewModel::class.java)
-    }
+    private val favoritesAdapter by lazy { favoritesAdapter() }
+    private val viewModel: FavoritesViewModel by viewModel()
 
     val maps = ArrayList<SkiMap>()
     val areas = ArrayList<SkiArea>()
@@ -124,7 +124,8 @@ class FavoritesFragment : Fragment() {
                     favoriteDividerSettings.setOnClickListener {
                         parentFragmentManager.commit {
                             addToBackStack("settings")
-                            add(R.id.settingsHolder, SettingsFragment())
+                            val settingsFragment: SettingsFragment = get()
+                            add(R.id.settingsHolder, settingsFragment)
                         }
                     }
                     favoriteDividerText.text = getString(R.string.favorites_maps_divider_text)

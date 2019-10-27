@@ -8,12 +8,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.SharedElementCallback
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.transition.TransitionInflater
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.objects.SkiRegion
@@ -24,6 +26,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.area_layout.*
 import kotlinx.android.synthetic.main.offline_item.view.*
 import org.koin.android.viewmodel.ext.android.viewModel
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.map_item.view.*
+
 
 class AreaViewFragment : Fragment() {
 
@@ -34,17 +39,18 @@ class AreaViewFragment : Fragment() {
 
     private val viewModel: AreaViewModel by viewModel()
 
+    private var clickedPosition: Int = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         areaKey = arguments!!.getInt("areaKey")
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.area_layout, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.area_layout, container, false)
+        //prepareTransitions()
+        //postponeEnterTransition()
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -67,6 +73,7 @@ class AreaViewFragment : Fragment() {
         viewModel.regions.observe(viewLifecycleOwner, regionsObserver)
         viewModel.offline.observe(viewLifecycleOwner, offlineObserver)
         viewModel.loadArea(areaKey)
+
     }
 
     private val areaObserver = Observer<SkiArea?> { newArea ->
@@ -188,9 +195,24 @@ class AreaViewFragment : Fragment() {
             }
         }
         .bind { position ->
-            (itemView as MapItem).setup(maps[position], skiArea?.name ?: "")
+            (itemView as MapItem).setup(maps[position], skiArea?.name ?: ""){
+                clickedPosition = position
+            }
         }
         .build()
+
+/*    private fun prepareTransitions(){
+        sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
+        setExitSharedElementCallback(object : SharedElementCallback(){
+            override fun onMapSharedElements(names: MutableList<String>, sharedElements: MutableMap<String, View>) {
+                // Locate the ViewHolder for the clicked position.
+                val selectedViewHolder = mapListRecycler.findViewHolderForAdapterPosition(clickedPosition) ?: return
+
+                // Map the first shared element name to the child ImageView.
+                sharedElements[names[0]] = selectedViewHolder.itemView.findViewById(R.id.mapListItemImage)
+            }
+        })
+    }*/
 
 }
 

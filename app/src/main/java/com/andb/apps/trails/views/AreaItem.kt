@@ -1,13 +1,18 @@
 package com.andb.apps.trails.views
 
 import android.content.Context
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.ShapeDrawable
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import com.andb.apps.trails.R
 import com.andb.apps.trails.objects.SkiArea
 import com.andb.apps.trails.openAreaView
 import com.andb.apps.trails.openMapView
 import com.andb.apps.trails.repository.MapsRepo
+import com.andb.apps.trails.utils.GlideApp
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.utils.mainThread
 import com.andb.apps.trails.utils.newIoThread
@@ -47,15 +52,23 @@ class AreaItem : ConstraintLayout {
         }
         if (mapPreviewID != null) {
             newIoThread {
-                val mapUrl = MapsRepo.getMapByID(mapPreviewID)
+                val mapUrl = MapsRepo.getMapByID(mapPreviewID)?.url
                 mainThread {
-                    GlideApp.with(this@AreaItem).load(mapUrl)
-                        .transforms(CenterCrop(), RoundedCorners(dpToPx(8))).into(areaMapPreview)
+                    GlideApp.with(this@AreaItem)
+                        .load(mapUrl)
+                        .placeholder(GradientDrawable().also { it.setColor(ContextCompat.getColor(context, R.color.placeholderColor)); it.cornerRadius = dpToPx(8).toFloat() })
+                        .transforms(CenterCrop(), RoundedCorners(dpToPx(8)))
+                        .into(areaMapPreview)
                 }
             }
+            areaMapPreview.transitionName = "mapTransitionAreaItem$mapPreviewID"
             areaMapPreview.setOnClickListener {
-                openMapView(mapPreviewID, name, context)
+                openMapView(mapPreviewID, context, areaMapPreview)
             }
+        }else{
+            //no placeholder if no maps
+            areaMapPreview.setImageDrawable(null)
+            areaMapPreview.setOnClickListener {  }
         }
         setOnClickListener { openAreaView(id, context) }
 

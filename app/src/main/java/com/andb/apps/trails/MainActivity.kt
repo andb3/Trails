@@ -1,13 +1,17 @@
 package com.andb.apps.trails
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.andb.apps.trails.settings.SettingsFragment
+import com.andb.apps.trails.settings.SettingsViewModel
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.android.ext.android.get
 import org.koin.android.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
@@ -19,7 +23,7 @@ class MainActivity : AppCompatActivity() {
      * one of the sections/tabs/pages.
      */
     inner class SectionsPagerAdapter internal constructor(fm: FragmentManager) :
-        FragmentPagerAdapter(fm) {
+        FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
@@ -69,15 +73,19 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onBackPressed() {
+        when {
+            supportFragmentManager.backStackEntryCount > 0 -> {
+                val settingsFragment: SettingsFragment = get()
+                when{
+                    settingsFragment.isAdded && settingsFragment.canGoBack()->{
+                        settingsFragment.goBack()
+                    }
+                    else->super.onBackPressed()
+                }
+            }
+            viewModel.exploreFragment.viewModel.isBackPossible() && pager.currentItem == 1 -> viewModel.exploreFragment.viewModel.backRegion()
+            else -> super.onBackPressed()
 
-        setStatusBarColors(this)
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            super.onBackPressed()
-        } else if (viewModel.exploreFragment.isBackPossible() && pager.currentItem == 1) {
-            //viewModel.exploreFragment.viewModel.backRegion()
-            viewModel.exploreFragment.backRegion()
-        } else {
-            super.onBackPressed()
         }
 
     }

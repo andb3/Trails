@@ -9,10 +9,12 @@ import com.andb.apps.trails.database.areasDao
 import com.andb.apps.trails.database.mapsDao
 import com.andb.apps.trails.objects.SkiMap
 import com.andb.apps.trails.openMapView
+import com.andb.apps.trails.utils.GlideApp
 import com.andb.apps.trails.utils.dpToPx
 import com.andb.apps.trails.utils.newIoThread
 import com.like.LikeButton
 import com.like.OnLikeListener
+import kotlinx.android.synthetic.main.area_item.view.*
 import kotlinx.android.synthetic.main.map_item.view.*
 
 class MapItem : ConstraintLayout {
@@ -24,7 +26,7 @@ class MapItem : ConstraintLayout {
         inflate(context, R.layout.map_item, this)
     }
 
-    fun setup(map: SkiMap, areaName: String, favorite: Boolean = false) {
+    fun setup(map: SkiMap, areaName: String, favorite: Boolean = false, onClick: (()->Unit)? = null) {
         GlideApp.with(this)
             .load(map.thumbnails.last().url)
             .fitCenter()
@@ -39,8 +41,10 @@ class MapItem : ConstraintLayout {
             }
         }
         mapListItemYear.text = map.year.toString()
+        mapListItemImage.transitionName = "mapTransitionMapItem${map.id}"
         setOnClickListener {
-            openMapView(map.id, areaName, context)
+            onClick?.invoke()
+            openMapView(map.id, context, mapListItemImage)
         }
 
         mapListFavoriteButton.apply {
