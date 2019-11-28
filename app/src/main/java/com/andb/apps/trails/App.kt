@@ -1,20 +1,24 @@
 package com.andb.apps.trails
 
 import android.app.Application
-import android.content.res.Configuration
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.room.Room
-import com.andb.apps.trails.database.Database
-import com.andb.apps.trails.database.MapsDao
-import com.andb.apps.trails.pages.*
-import com.andb.apps.trails.repository.AreasRepo
-import com.andb.apps.trails.repository.MapsRepo
-import com.andb.apps.trails.repository.MockInterceptor
-import com.andb.apps.trails.repository.RegionsRepo
-import com.andb.apps.trails.settings.SettingsFragment
-import com.andb.apps.trails.settings.SettingsViewModel
-import com.andb.apps.trails.utils.newIoThread
+import com.andb.apps.trails.data.local.Database
+import com.andb.apps.trails.data.local.Prefs
+import com.andb.apps.trails.data.remote.Updater
+import com.andb.apps.trails.data.repository.*
+import com.andb.apps.trails.ui.area.AreaViewModel
+import com.andb.apps.trails.ui.explore.ExploreFragment
+import com.andb.apps.trails.ui.explore.ExploreViewModel
+import com.andb.apps.trails.ui.favorites.FavoritesFragment
+import com.andb.apps.trails.ui.favorites.FavoritesViewModel
+import com.andb.apps.trails.ui.map.MapViewModel
+import com.andb.apps.trails.ui.search.SearchFragment
+import com.andb.apps.trails.ui.settings.SettingsFragment
+import com.andb.apps.trails.ui.settings.SettingsViewModel
+import com.andb.apps.trails.util.FileDownloader
+import com.andb.apps.trails.util.newIoThread
 import com.chibatching.kotpref.Kotpref
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -41,16 +45,23 @@ class App : Application() {
         single { val db: Database = get(); db.areasDao() }
         single { val db: Database = get(); db.mapsDao() }
 
+        single<RegionsRepository> { RegionsRepositoryImpl(get()) }
+        single<AreasRepository> { AreasRepositoryImpl(get()) }
+        single<MapsRepository> { MapsRepositoryImpl(get()) }
+
+        single { FileDownloader(androidContext()) }
+
         single { FavoritesFragment() }
         single { ExploreFragment() }
         single { SearchFragment() }
         single { SettingsFragment() }
 
-        viewModel { MainActivityViewModel(get(), get(), get()) }
-        viewModel { FavoritesViewModel() }
-        viewModel { ExploreViewModel() }
-        viewModel { AreaViewModel() }
-        viewModel { SettingsViewModel(androidContext() as Application) }
+        viewModel { MainActivityViewModel(favoritesFragment = get(), exploreFragment = get(), searchFragment = get()) }
+        viewModel { FavoritesViewModel(areasRepo = get(), mapsRepo = get()) }
+        viewModel { ExploreViewModel(regionsRepo = get(), areasRepo = get()) }
+        viewModel { AreaViewModel(regionsRepo = get(), areasRepo = get(), mapsRepo = get()) }
+        viewModel { MapViewModel(areasRepo = get(), mapsRepo = get(), fileDownloader = get()) }
+        viewModel { SettingsViewModel(androidContext()) }
 
         single {
             Moshi.Builder()
@@ -59,12 +70,14 @@ class App : Application() {
         }
         single {
             OkHttpClient.Builder()
-                .addInterceptor(MockInterceptor(androidContext()))
+                .apply {
+                    //if(BuildConfig.DEBUG) addInterceptor(MockInterceptor(androidContext()))
+                }
                 .build()
         }
         single {
             Retrofit.Builder()
-                .baseUrl("https://trailsbackend-254417.appspot.com/")
+                .baseUrl("https://trailsbackend.ml/")
                 .client(get())
                 .addConverterFactory(MoshiConverterFactory.create(get()))
                 .build()
@@ -82,7 +95,6 @@ class App : Application() {
             modules(koinModule)
         }
         Once.initialise(this)
-        Database.setDB(this)
         Kotpref.init(this)
         AppCompatDelegate.setDefaultNightMode(Prefs.nightMode)
 
@@ -91,39 +103,20 @@ class App : Application() {
         Log.d("once", "mapLoad: ${Once.beenDone(TimeUnit.DAYS, 1, "mapLoad")}")
 
         if (!Once.beenDone(TimeUnit.DAYS, 1, "regionLoad")) {
-            RegionsRepo.loading.value = true
             newIoThread {
-                Log.d("once", "updating regions")
-                val loaded = RegionsRepo.updateRegions()
-                if (loaded) {
-                    Log.d("once", "updated regions")
-                    Once.markDone("regionLoad")
-                }
-                RegionsRepo.loading.postValue(false)
+                Updater.updateRegions()
             }
         }
 
         if (!Once.beenDone(TimeUnit.DAYS, 1, "areaLoad")) {
-            AreasRepo.loading.value = true
             newIoThread {
-                Log.d("once", "updating areas")
-                val loaded = AreasRepo.updateAreas()
-                if (loaded) {
-                    Log.d("once", "updated areas")
-                    Once.markDone("areaLoad")
-                }
-                AreasRepo.loading.postValue(false)
+                Updater.updateAreas()
             }
         }
 
         if (!Once.beenDone(TimeUnit.DAYS, 1, "mapLoad")) {
-            MapsRepo.loading.value = true
             newIoThread {
-                val loaded = MapsRepo.updateMaps()
-                if (loaded) {
-                    Once.markDone("mapLoad")
-                }
-                MapsRepo.loading.postValue(false)
+                Updater.updateMaps()
             }
         }
     }

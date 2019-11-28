@@ -79,7 +79,8 @@
         <item>Time-Based</item>
     </string-array>
     <string name="settings_about">About</string>
-    <string name="settings_licenses">Licenses</string>
+    <string name="settings_about_version">Version</string>
+    <string name="settings_about_licenses">Licenses</string>
     <string name="settings_powered_by">Powered by SkiMap.org</string>
 
 

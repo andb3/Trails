@@ -10,6 +10,7 @@
         android:id="@+id/settingsRecycler"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layoutAnimation="@anim/rv_slide_from_bottom_layout_anim"
         android:clipToPadding="true"
         android:paddingTop="24dp" />
 </LinearLayout>
