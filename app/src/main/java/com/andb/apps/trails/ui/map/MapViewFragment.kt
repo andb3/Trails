@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,7 +18,12 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import com.andb.apps.trails.R
 import com.andb.apps.trails.data.model.isPdf
-import com.andb.apps.trails.util.*
+import com.andb.apps.trails.util.FileDownloader
+import com.andb.apps.trails.util.applyEach
+import com.andb.apps.trails.util.glide.GlideApp
+import com.andb.apps.trails.util.glide.loadWithProgress
+import com.andb.apps.trails.util.mainThread
+import com.andb.apps.trails.util.newIoThread
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
@@ -113,9 +119,13 @@ class MapViewFragment : Fragment() {
 
     private val imageURLObserver = Observer<String> { url ->
         setLoading()
+        Log.d("imageURLObserver", "loading url: $url")
         if (url.isPdf()) {
             newIoThread {
-                val file: File = fileDownloader.downloadFile(url)
+                val file: File = fileDownloader.downloadFile(url) { progress ->
+                    Log.d("onProgress", "received $progress%")
+                    setLoading(progress)
+                }
                 mainThread {
                     setImagePDF(file)
                 }
@@ -129,7 +139,20 @@ class MapViewFragment : Fragment() {
     private fun setLoading() {
         mapViewOfflineItem.visibility = View.GONE
         mapLoadingIndicator.visibility = View.VISIBLE
+        mapLoadingIndicator.isIndeterminate = true
         mapViewDownload.visibility = View.GONE
+    }
+
+    private fun setLoading(progress: Int) {
+        if (mapLoadingIndicator.isIndeterminate) {
+            mapLoadingIndicator.isIndeterminate = false
+            mapLoadingIndicator.max = 100
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mapLoadingIndicator.setProgress(progress, true)
+        } else {
+            mapLoadingIndicator.progress = progress
+        }
     }
 
     private fun setOffline() {
@@ -166,9 +189,12 @@ class MapViewFragment : Fragment() {
     }
 
     fun setImageStandard(url: String) {
+        Log.d("progressTest", "loading standard bitmap")
         GlideApp.with(this@MapViewFragment)
             .asBitmap()
-            .load(url)
+            .loadWithProgress(url) { progress ->
+                setLoading(progress)
+            }
             .into(object : CustomViewTarget<View, Bitmap>(mapImageView) {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                     mapImageView.setImage(ImageSource.cachedBitmap(resource))

@@ -7,8 +7,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.andb.apps.trails.R
 import com.andb.apps.trails.data.model.SkiMap
 import com.andb.apps.trails.ui.map.openMapView
-import com.andb.apps.trails.util.GlideApp
 import com.andb.apps.trails.util.dpToPx
+import com.andb.apps.trails.util.glide.GlideApp
 import com.like.LikeButton
 import com.like.OnLikeListener
 import kotlinx.android.synthetic.main.map_item.view.*

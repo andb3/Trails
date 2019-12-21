@@ -127,3 +127,7 @@ infix fun <T> Collection<T>.equalsUnordered(other: Collection<T>): Boolean {
     // collections are same or they are contains same elements
     return true
 }
+
+infix fun Int.toUnordered(to: Int): IntProgression {
+    return if (this > to) to..this else this..to
+}

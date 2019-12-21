@@ -16,6 +16,9 @@ interface MapsDao{
     @Update
     fun updateMap(map: SkiMap)
 
+    @Update
+    fun updateMaps(maps: List<SkiMap>)
+
     @Delete
     fun deleteMap(map: SkiMap)
 

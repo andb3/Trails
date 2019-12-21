@@ -28,4 +28,16 @@ class FavoritesViewModel(val areasRepo: AreasRepository, val mapsRepo: MapsRepos
             areasRepo.updateFavorite(area, liked)
         }
     }
+
+    fun updateMapFavorite(map: SkiMap, index: Int) {
+        newIoThread {
+            mapsRepo.updateFavorite(map, index)
+        }
+    }
+
+    fun updateAreaFavorite(area: SkiArea, index: Int) {
+        newIoThread {
+            areasRepo.updateFavorite(area, index)
+        }
+    }
 }

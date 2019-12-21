@@ -16,19 +16,27 @@ import java.net.URL
 
 class FileDownloader(val context: Context) {
 
-    private fun downloadFromURL(fileUrl: String, directory: File) {
+    private fun downloadFromURL(fileUrl: String, directory: File, onProgress: ((Int) -> Unit)?) {
         try {
 
             val url = URL(fileUrl)
             val urlConnection = url.openConnection() as HttpURLConnection
             urlConnection.connect()
 
+
             val inputStream = urlConnection.inputStream
             val fileOutputStream = FileOutputStream(directory)
 
+            var readLength = 0
             val buffer = ByteArray(MEGABYTE)
             var bufferLength = inputStream.read(buffer)
             while (bufferLength > 0) {
+                readLength += bufferLength
+                onProgress?.invoke((100 * readLength / urlConnection.contentLength))
+                Log.d(
+                    "onProgress",
+                    "invoking with ${(100 * readLength / urlConnection.contentLength).toInt()}%"
+                )
                 fileOutputStream.write(buffer, 0, bufferLength)
                 bufferLength = inputStream.read(buffer)
             }
@@ -43,7 +51,7 @@ class FileDownloader(val context: Context) {
 
     }
 
-    fun downloadFile(fileUrl: String): File {
+    fun downloadFile(fileUrl: String, onProgress: (Int) -> Unit): File {
         val folder = File(context.filesDir.toString(), "PDFs")
         folder.mkdir()
 
@@ -54,7 +62,7 @@ class FileDownloader(val context: Context) {
                 return pdfFile
             } else {
                 pdfFile.createNewFile()
-                downloadFromURL(fileUrl, pdfFile)
+                downloadFromURL(fileUrl, pdfFile, onProgress)
             }
         } catch (e: IOException) {
             e.printStackTrace()

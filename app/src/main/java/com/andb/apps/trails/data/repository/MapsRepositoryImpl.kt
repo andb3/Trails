@@ -1,9 +1,11 @@
 package com.andb.apps.trails.data.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.andb.apps.trails.data.local.MapsDao
 import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.model.SkiMap
+import com.andb.apps.trails.util.toUnordered
 
 class MapsRepositoryImpl(private val mapsDao: MapsDao) : MapsRepository {
 
@@ -30,8 +32,22 @@ class MapsRepositoryImpl(private val mapsDao: MapsDao) : MapsRepository {
     }
 
     override suspend fun updateFavorite(map: SkiMap, favoriteIndex: Int) {
-        map.favorite = favoriteIndex
-        mapsDao.updateMap(map)
+        val oldIndex = map.favorite
+
+        //returns -1 if oldIndex is smaller (every map needs to step down to fill the gap) or 1 if larger (step up to fill gap)
+        val increment = oldIndex.compareTo(favoriteIndex)
+        Log.d("updateFavorite", "increment = $increment")
+
+        val range = oldIndex toUnordered favoriteIndex
+        val maps = mapsDao.getAllStatic().filter { it.favorite in range }
+        maps.forEach {
+            if (it.id == map.id) {
+                it.favorite = favoriteIndex
+            } else {
+                it.favorite += increment
+            }
+        }
+        mapsDao.updateMaps(maps)
     }
 
 }

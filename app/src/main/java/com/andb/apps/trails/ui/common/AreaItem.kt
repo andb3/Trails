@@ -10,8 +10,8 @@ import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.repository.MapsRepository
 import com.andb.apps.trails.ui.area.openAreaView
 import com.andb.apps.trails.ui.map.openMapView
-import com.andb.apps.trails.util.GlideApp
 import com.andb.apps.trails.util.dpToPx
+import com.andb.apps.trails.util.glide.GlideApp
 import com.andb.apps.trails.util.mainThread
 import com.andb.apps.trails.util.newIoThread
 import com.bumptech.glide.load.resource.bitmap.CenterCrop

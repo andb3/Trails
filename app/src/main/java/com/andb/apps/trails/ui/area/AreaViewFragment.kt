@@ -52,7 +52,6 @@ class AreaViewFragment : Fragment() {
         mapListRecycler.layoutManager = GridLayoutManager(context, 2)
         areaNested.apply {
             setOnScrollChangeListener { v: NestedScrollView?, scrollX: Int, scrollY: Int, oldScrollX: Int, oldScrollY: Int ->
-                Log.d("areaRecycler", "scrolled")
                 if (scrollY > oldScrollY) {
                     areaViewFab?.hide()
                 } else {

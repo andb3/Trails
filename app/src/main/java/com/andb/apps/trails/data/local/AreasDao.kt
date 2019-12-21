@@ -17,6 +17,9 @@ interface AreasDao {
     @Update
     fun updateArea(area: SkiArea)
 
+    @Update
+    fun updateAreas(areas: List<SkiArea>)
+
     @Delete
     fun deleteArea(area: SkiArea)
 

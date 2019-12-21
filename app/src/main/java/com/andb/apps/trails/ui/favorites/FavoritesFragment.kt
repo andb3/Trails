@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
+import com.andb.apps.dragdropper.DragDropper
+import com.andb.apps.dragdropper.dragDropWith
 import com.andb.apps.trails.R
 import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.model.SkiMap
@@ -15,6 +17,7 @@ import com.andb.apps.trails.data.repository.AreasRepository
 import com.andb.apps.trails.ui.common.AreaItem
 import com.andb.apps.trails.ui.common.MapItem
 import com.andb.apps.trails.ui.settings.SettingsFragment
+import com.andb.apps.trails.util.equalsUnordered
 import com.andb.apps.trails.util.mainThread
 import com.andb.apps.trails.util.newIoThread
 import com.github.rongi.klaster.Klaster
@@ -63,10 +66,37 @@ class FavoritesFragment : Fragment() {
         favoritesRecycler.apply {
             layoutManager = gridLinearManager
             adapter = favoritesAdapter
+            dragDropWith {
+                dragDirection = DragDropper.DIRECTION_BOTH
+                constrainBy { vh ->
+                    when (vh.itemViewType) {
+                        MAP_DIVIDER_TYPE -> Pair(0, 0)
+                        MAP_ITEM_TYPE -> Pair(1, maps.size)
+                        AREA_DIVIDER_TYPE -> Pair(maps.size + 1, maps.size + 1)
+                        else -> Pair(maps.size + 2, maps.size + 1 + areas.size)
+                    }
+                }
+                onDropped { oAdapterPos, nAdapterPos ->
+                    var oldPos = oAdapterPos - 1
+                    var newPos = nAdapterPos - 1
+                    if (oldPos in 0 until maps.size) {
+                        val draggedMap = maps[oldPos]
+                        viewModel.updateMapFavorite(draggedMap, newPos)
+                    }
+
+                    oldPos = oldPos - maps.size - 1
+                    newPos = newPos - maps.size - 1
+
+                    if (oldPos in 0 until areas.size) {
+                        val draggedArea = areas[oldPos]
+                        viewModel.updateAreaFavorite(draggedArea, newPos)
+                    }
+                }
+            }
         }
 
         viewModel.getFavoriteMaps().observe(viewLifecycleOwner, Observer { newMaps ->
-            val refreshNeeded = newMaps != maps
+            val refreshNeeded = !newMaps.equalsUnordered(maps)
             maps.clear()
             maps.addAll(newMaps)
             if (refreshNeeded) {
@@ -74,7 +104,7 @@ class FavoritesFragment : Fragment() {
             }
         })
         viewModel.getFavoriteAreas().observe(viewLifecycleOwner, Observer { newAreas ->
-            val refreshNeeded = newAreas != areas
+            val refreshNeeded = !newAreas.equalsUnordered(areas)
             areas.clear()
             areas.addAll(newAreas)
             if (refreshNeeded) {

@@ -1,8 +1,10 @@
 package com.andb.apps.trails.data.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.andb.apps.trails.data.local.AreasDao
 import com.andb.apps.trails.data.model.SkiArea
+import com.andb.apps.trails.util.toUnordered
 
 class AreasRepositoryImpl(private val areasDao: AreasDao) : AreasRepository {
 
@@ -27,7 +29,21 @@ class AreasRepositoryImpl(private val areasDao: AreasDao) : AreasRepository {
     }
 
     override suspend fun updateFavorite(area: SkiArea, favoriteIndex: Int) {
-        area.favorite = favoriteIndex
-        areasDao.updateArea(area)
+        val oldIndex = area.favorite
+
+        //returns -1 if oldIndex is smaller (every area needs to step down to fill the gap) or 1 if larger (step up to fill gap)
+        val increment = oldIndex.compareTo(favoriteIndex)
+        Log.d("updateFavorite", "increment = $increment")
+
+        val range = oldIndex toUnordered favoriteIndex
+        val areas = areasDao.getAllStatic().filter { it.favorite in range }
+        areas.forEach {
+            if (it.id == area.id) {
+                it.favorite = favoriteIndex
+            } else {
+                it.favorite += increment
+            }
+        }
+        areasDao.updateAreas(areas)
     }
 }
