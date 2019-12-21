@@ -1,34 +1,27 @@
 package com.andb.apps.trails
 
-import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
-import com.andb.apps.trails.database.areasDao
-import com.andb.apps.trails.pages.FavoritesFragment
-import com.andb.apps.trails.repository.AreasRepo
-import com.andb.apps.trails.repository.MapsRepo
-import com.andb.apps.trails.repository.RegionsRepo
+import com.andb.apps.trails.ui.settings.SettingsFragment
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.android.ext.android.get
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
-    val viewModel by lazy { ViewModelProviders.of(this).get(MainActivityViewModel::class.java) }
+    val viewModel: MainActivityViewModel by viewModel()
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
     inner class SectionsPagerAdapter internal constructor(fm: FragmentManager) :
-        FragmentPagerAdapter(fm) {
+        FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
         override fun getItem(position: Int): Fragment {
             return when (position) {
@@ -53,15 +46,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        RegionsRepo.init(this){
-            if(viewModel.exploreFragment.isAdded){
-                viewModel.exploreFragment.viewModel.setBaseRegion(1)
-            }
+        if (viewModel.exploreFragment.isAdded) {
+            //viewModel.exploreFragment.viewModel.setBaseRegion(1)
         }
-        AreasRepo.init(this){
-            viewModel.favoritesFragment.refresh(viewModel.favoritesFragment.isAdded)
-        }
-        MapsRepo.init(this)
+        viewModel.favoritesFragment.refresh(viewModel.favoritesFragment.isAdded)
 
         navigation.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(pager))
         setAdapter(pager)
@@ -83,14 +71,19 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onBackPressed() {
+        when {
+            supportFragmentManager.backStackEntryCount > 0 -> {
+                val settingsFragment: SettingsFragment = get()
+                when{
+                    settingsFragment.isAdded && settingsFragment.canGoBack()->{
+                        settingsFragment.goBack()
+                    }
+                    else->super.onBackPressed()
+                }
+            }
+            viewModel.exploreFragment.viewModel.isBackPossible() && pager.currentItem == 1 -> viewModel.exploreFragment.viewModel.backRegion()
+            else -> super.onBackPressed()
 
-        setStatusBarColors(this)
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            super.onBackPressed()
-        } else if (viewModel.exploreFragment.viewModel.isBackPossible() && pager.currentItem == 1) {
-            viewModel.exploreFragment.viewModel.backRegion()
-        } else {
-            super.onBackPressed()
         }
 
     }

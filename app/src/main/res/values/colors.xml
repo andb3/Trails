@@ -7,4 +7,6 @@
     <color name="colorSecondary">#81b9bf</color>
     <color name="iconDeselectedColor">#AA000000</color>
     <color name="colorMapOverlay">#AA000000</color>
+    <color name="backgroundDark">#222222</color>
+    <color name="placeholderColor">#DDDDDD</color>
 </resources>

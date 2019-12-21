@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#111111</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="statusBarColor">#00000000</color>
+    <color name="colorAccent">#81b9bf</color>
+    <color name="colorSecondary">#00567E</color>
+    <color name="iconDeselectedColor">#AAFFFFFF</color>
+    <color name="colorMapOverlay">#AA000000</color>
+    <color name="backgroundDark">#222222</color>
+    <color name="placeholderColor">#333333</color>
+</resources>

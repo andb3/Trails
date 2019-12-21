@@ -1,42 +1,87 @@
 <resources>
+
+    <!--Page Titles-->
+
     <string name="title_fav">Favorites</string>
     <string name="title_explore">Explore</string>
     <string name="title_search">Search</string>
-    <string name="not_available">N/A</string>
-    <string name="map_year_placeholder">Year</string>
-    <string name="map_area_name_placeholder">Area Name</string>
-    <string name="map_image_content_description">Map Image</string>
-    <string name="area_lift_count_text">Lifts: %1$d</string>
-    <string name="area_run_count_text">Runs: %1$d</string>
-    <string name="area_opening_year_text">Opening Year: %1$d</string>
-    <string name="area_website_text">Website: %1$s</string>
-    <string name="area_regions_text">Regions: %1$s</string>
-    <string name="menu_region_americas">Americas</string>
-    <string name="menu_region_europe">Europe</string>
-    <string name="menu_region_asia">Asia</string>
-    <string name="menu_region_oceania">Oceania</string>
-    <string name="switch_region_text">Switch</string>
+
+
+    <!--Favorites-->
+
     <string name="favorites_maps_divider_text">Maps</string>
     <string name="favorites_area_divider_text">Areas</string>
     <string name="favorites_remove_alert_title">Remove Favorite?</string>
     <string name="favorites_remove_alert_positive">OK</string>
     <string name="favorites_remove_alert_negative">Cancel</string>
-    <string name="favorite_area_current_map">Current Map</string>
-    <string name="ski_region_placeholder">Ski Region</string>
+
+
+    <!--Explore-->
+
+    <string name="menu_region_americas">Americas</string>
+    <string name="menu_region_europe">Europe</string>
+    <string name="menu_region_asia">Asia</string>
+    <string name="menu_region_oceania">Oceania</string>
+    <string-array name="base_regions">
+        <item>@string/menu_region_americas</item>
+        <item>@string/menu_region_europe</item>
+        <item>@string/menu_region_asia</item>
+        <item>@string/menu_region_oceania</item>
+    </string-array>
+    <string name="switch_region_text">Switch</string>
+
+
+    <!--Region/Area Items-->
+
     <string name="map_count">Maps: %1$d</string>
-    <string name="download_progress_title">Initial Download</string>
-    <string name="download_progress_desc">Downloading regions and areas - this might take a while, so you can leave the app and check the progress in the notification</string>
-    <string name="download_progress_failed">Download Failed</string>
-    <string name="download_progress_complete">Download Complete</string>
-    <string name="download_progress_try_again">Try Again</string>
-    <string name="download_progress_regions">Downloading Regions</string>
-    <string name="download_progress_areas">Downloading Areas</string>
+
+
+    <!--Area View-->
+
+    <string name="area_lift_count_text">Lifts: %1$d</string>
+    <string name="area_run_count_text">Runs: %1$d</string>
+    <string name="area_opening_year_text">Opening Year: %1$d</string>
+    <string name="area_website_text">Website: %1$s</string>
+    <string name="area_regions_text">Regions: %1$s</string>
     <string name="area_info_card_title">Info</string>
+
+
+    <!--Map Item / Map View-->
+
+    <string name="map_year_placeholder">Year</string>
+    <string name="map_area_name_placeholder">Area Name</string>
+
+
+    <!--Offline-->
+
     <string name="offline_error_title">Offline</string>
     <string name="offline_error_desc">Any areas, regions, or maps you\'ve viewed will be available offline</string>
     <string name="offline_error_refresh">Refresh</string>
     <string name="downloading_notification_title">Downloading Map: %1$s %2$d</string>
 
+
+    <!--Settings-->
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_starting_region">Starting Region</string>
+    <string-array name="settings_sort_options">
+        <item>Alphabetical</item>
+        <item>Map Count</item>
+    </string-array>
+    <string name="settings_sort_regions">Sort Regions</string>
+    <string name="settings_sort_areas">Sort Areas</string>
+    <string name="settings_theme_night_mode_title">Dark Mode</string>
+    <string-array name="settings_theme_night_mode_options">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Follow Battery Saver</item>
+        <item>Follow System</item>
+        <item>Time-Based</item>
+    </string-array>
+    <string name="settings_about">About</string>
+    <string name="settings_about_version">Version</string>
+    <string name="settings_about_licenses">Licenses</string>
+    <string name="settings_powered_by">Powered by SkiMap.org</string>
 
 
 </resources>
