@@ -33,10 +33,6 @@ class FileDownloader(val context: Context) {
             while (bufferLength > 0) {
                 readLength += bufferLength
                 onProgress?.invoke((100 * readLength / urlConnection.contentLength))
-                Log.d(
-                    "onProgress",
-                    "invoking with ${(100 * readLength / urlConnection.contentLength).toInt()}%"
-                )
                 fileOutputStream.write(buffer, 0, bufferLength)
                 bufferLength = inputStream.read(buffer)
             }

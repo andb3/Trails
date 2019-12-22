@@ -19,7 +19,6 @@ fun GlideRequest<Bitmap>.loadWithProgress(
             get() = granularity
 
         override fun onProgress(bytesRead: Long, expectedLength: Long) {
-            Log.d("onProgress", "invoking with ${(100 * bytesRead / expectedLength).toInt()}%")
             onProgress.invoke((100 * bytesRead / expectedLength).toInt())
         }
     })

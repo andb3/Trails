@@ -95,7 +95,3 @@ class ExploreViewModel(val regionsRepo: RegionsRepository, val areasRepo: AreasR
     }
 
 }
-
-
-class ChipItem(val parentID: Int, val region: SkiRegionTree? = null, val area: SkiArea? = null)
-

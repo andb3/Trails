@@ -21,6 +21,7 @@ open class TitlePreference(key: String) : Preference(key){
             visibility = View.VISIBLE
         }
         holder.iconFrame.visibility = View.GONE
+        holder.setIsRecyclable(false) //so text styling won't apply to other views
     }
 }
 

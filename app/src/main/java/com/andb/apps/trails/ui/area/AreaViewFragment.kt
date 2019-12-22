@@ -204,6 +204,9 @@ class AreaViewFragment : Fragment() {
         .build()
 
 
+    companion object {
+        const val BACKSTACK_TAG = "areaView"
+    }
 }
 
 fun openAreaView(areaID: Int, context: Context) {
@@ -218,7 +221,7 @@ fun openAreaView(areaID: Int, context: Context) {
         fragmentActivity.supportFragmentManager.commit {
             setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
             add(R.id.exploreAreaReplacement, fragment)
-            addToBackStack("areaView")
+            addToBackStack(AreaViewFragment.BACKSTACK_TAG)
         }
         Log.d("openAreaView", "id: $areaID")
     }

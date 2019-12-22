@@ -37,7 +37,7 @@ open class ListLiveData<T>(initialList: List<T> = emptyList()) : MediatorLiveDat
     }
 
     fun drop(by: Int) {
-        backingList.dropLast(by)
+        backingList.dropBy(by)
         postValue(backingList)
     }
 

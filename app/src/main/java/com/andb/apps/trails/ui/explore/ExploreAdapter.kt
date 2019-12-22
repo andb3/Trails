@@ -88,7 +88,14 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         setIconOnly(progressDrawable)
                     }
 
-                    val items = regionTree.childRegions.sortedByDescending { it.mapCount }.map { ChipItem(regionTree.id, region = it) } + regionTree.childAreas.sortedByDescending { it.maps.size }.map { ChipItem(regionTree.id, area = it) }
+                    val regionItems = regionTree.childRegions
+                        .sortedByDescending { it.mapCount }
+                        .map { ChipItem(regionTree.id, region = it) }
+                    val areaItems = regionTree.childAreas
+                        .sortedByDescending { it.maps.size }
+                        .map { ChipItem(regionTree.id, area = it) }
+                    val items = regionItems + areaItems
+
                     regionChildrenChip1.setupChild(items.getOrNull(0))
                     regionChildrenChip2.setupChild(items.getOrNull(1))
                 }
@@ -264,3 +271,4 @@ fun Chip.setTextOnly() {
     textStartPadding = dpToPx(8).toFloat()
 }
 
+class ChipItem(val parentID: Int, val region: SkiRegionTree? = null, val area: SkiArea? = null)

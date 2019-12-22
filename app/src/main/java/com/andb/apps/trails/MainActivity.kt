@@ -1,11 +1,15 @@
 package com.andb.apps.trails
 
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.andb.apps.trails.ui.map.MapViewFragment
 import com.andb.apps.trails.ui.settings.SettingsFragment
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
@@ -22,39 +26,26 @@ class MainActivity : AppCompatActivity() {
      */
     inner class SectionsPagerAdapter internal constructor(fm: FragmentManager) :
         FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-
         override fun getItem(position: Int): Fragment {
             return when (position) {
                 0 -> viewModel.favoritesFragment
-
                 1 -> viewModel.exploreFragment
-
                 else -> viewModel.searchFragment
             }
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-
         }
 
-        override fun getCount(): Int {
-            // Show 3 total pages.
-            return 3
-        }
+        override fun getCount(): Int = 3
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (viewModel.exploreFragment.isAdded) {
-            //viewModel.exploreFragment.viewModel.setBaseRegion(1)
-        }
         viewModel.favoritesFragment.refresh(viewModel.favoritesFragment.isAdded)
 
         navigation.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(pager))
         setAdapter(pager)
     }
-
 
     private fun setAdapter(pager: ViewPager) {
         pager.adapter = SectionsPagerAdapter(supportFragmentManager)
@@ -66,26 +57,28 @@ class MainActivity : AppCompatActivity() {
                 viewModel.pagerPosition = tab?.position ?: 0
             }
         })
-
     }
 
-
     override fun onBackPressed() {
+        Log.d("onBackPressed", "backStackCount: ${supportFragmentManager.backStackEntryCount}")
         when {
             supportFragmentManager.backStackEntryCount > 0 -> {
                 val settingsFragment: SettingsFragment = get()
-                when{
-                    settingsFragment.isAdded && settingsFragment.canGoBack()->{
-                        settingsFragment.goBack()
+                when {
+                    settingsFragment.isAdded && settingsFragment.canGoBack() -> settingsFragment.goBack()
+                    supportFragmentManager.findFragmentByTag(MapViewFragment.BACKSTACK_TAG) != null -> {
+                        super.onBackPressed()
+                        window.addFlags(View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
                     }
-                    else->super.onBackPressed()
+                    else -> super.onBackPressed()
                 }
             }
-            viewModel.exploreFragment.viewModel.isBackPossible() && pager.currentItem == 1 -> viewModel.exploreFragment.viewModel.backRegion()
+            viewModel.exploreFragment.viewModel.isBackPossible() && pager.currentItem == 1 -> {
+                Log.d("onBackPressed", "backRegion")
+                viewModel.exploreFragment.viewModel.backRegion()
+            }
             else -> super.onBackPressed()
-
         }
-
     }
-
 }

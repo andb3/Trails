@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -123,7 +124,6 @@ class MapViewFragment : Fragment() {
         if (url.isPdf()) {
             newIoThread {
                 val file: File = fileDownloader.downloadFile(url) { progress ->
-                    Log.d("onProgress", "received $progress%")
                     setLoading(progress)
                 }
                 mainThread {
@@ -212,6 +212,9 @@ class MapViewFragment : Fragment() {
             })
     }
 
+    companion object {
+        const val BACKSTACK_TAG = "mapView"
+    }
 
 }
 
@@ -226,9 +229,11 @@ fun openMapView(id: Int, context: Context, sharedTransitionSource: ImageView) {
 
     activity.supportFragmentManager.commit {
         setReorderingAllowed(true)
-        addToBackStack("mapView")
+        addToBackStack(MapViewFragment.BACKSTACK_TAG)
         addSharedElement(sharedTransitionSource, sharedTransitionSource.transitionName)
         setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-        replace(R.id.mapViewHolder, fragment)
+        replace(R.id.mapViewHolder, fragment, MapViewFragment.BACKSTACK_TAG)
     }
+
+    activity.window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
 }
