@@ -47,7 +47,7 @@ class Converters : KoinComponent{
             return listOf()
         }
         //For some reason, moshi can't decode lists of thumbnails, and instead decodes them to List<LinkedHashTreeMap>
-        //By converting to string and then list, and vice versa, it works
+        //By converting to a list of strings and then thumbnails, and vice versa, it works
         val strings = stringAdapter.fromJson(data) ?: listOf()
         return strings.mapNotNull { thumbnailAdapter.fromJson(it) }
     }
@@ -56,4 +56,6 @@ class Converters : KoinComponent{
     fun thumbnailListToString(thumbnails: List<Thumbnail>): String {
         return stringAdapter.toJson(thumbnails.map { thumbnailAdapter.toJson(it) })
     }
+
+
 }

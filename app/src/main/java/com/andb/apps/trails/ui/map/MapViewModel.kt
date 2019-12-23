@@ -20,7 +20,7 @@ class MapViewModel(val areasRepo: AreasRepository, val mapsRepo: MapsRepository,
         if (it != null) areasRepo.getAreaByID(it.parentID)?.name ?: "" else ""
     }
     val imageURL: LiveData<String> = skiMap.map { it?.url }.notNull()
-    val favorite: LiveData<Boolean> = skiMap.map { it?.isFavorite() }.notNull()
+    val favorite: LiveData<Boolean> = skiMap.map { it?.favorite }.notNull()
 
     fun setMap(id: Int) {
         mapID.value = id

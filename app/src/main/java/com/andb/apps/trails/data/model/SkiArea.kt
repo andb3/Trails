@@ -10,7 +10,6 @@ data class SkiArea(
     @PrimaryKey
     @ColumnInfo(name = "areaID")
     val id: Int,
-
     @ColumnInfo(name = "areaName")
     val name: String,
     @ColumnInfo(name = "areaDetails")
@@ -23,10 +22,9 @@ data class SkiArea(
     val parentIDs: List<Int>
 
 ) {
-    @Json(name = "favorite")
-    var favorite: Int = -1
+    @Json(name = "area_favorite")
+    var favorite = false
 
-    fun isFavorite(): Boolean = favorite >= 0
     fun mapPreviewID() = maps.firstOrNull()
 
 }

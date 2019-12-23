@@ -22,9 +22,8 @@ data class SkiMap(
     val parentID: Int) {
 
     @ColumnInfo(name = "map_favorite")
-    var favorite = -1
+    var favorite = false
 
-    fun isFavorite(): Boolean = favorite >= 0
     fun isPdf(): Boolean = url.takeLast(4) == ".pdf"
 
 }

@@ -32,9 +32,7 @@ interface AreasDao {
     @Query("SELECT * FROM SkiArea")
     fun getAllStatic(): List<SkiArea>
 
-    /*@Query("SELECT * FROM SkiArea WHERE favorite = 1")
-    fun getFavorites(): LiveData<List<SkiArea>>*/
-    @Query("SELECT * FROM SkiArea WHERE favorite > -1")
+    @Query("SELECT * FROM SkiArea WHERE favorite = 1")
     fun getFavorites(): LiveData<List<SkiArea>>
 
     @Query("SELECT * FROM SkiArea WHERE areaName LIKE :text")

@@ -137,37 +137,37 @@ class MapViewFragment : Fragment() {
 
 
     private fun setLoading() {
-        mapViewOfflineItem.visibility = View.GONE
-        mapLoadingIndicator.visibility = View.VISIBLE
-        mapLoadingIndicator.isIndeterminate = true
-        mapViewDownload.visibility = View.GONE
+        mapViewOfflineItem?.visibility = View.GONE
+        mapLoadingIndicator?.visibility = View.VISIBLE
+        mapLoadingIndicator?.isIndeterminate = true
+        mapViewDownload?.visibility = View.GONE
     }
 
     private fun setLoading(progress: Int) {
-        if (mapLoadingIndicator.isIndeterminate) {
+        if (mapLoadingIndicator?.isIndeterminate == true) {
             mapLoadingIndicator.isIndeterminate = false
             mapLoadingIndicator.max = 100
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            mapLoadingIndicator.setProgress(progress, true)
+            mapLoadingIndicator?.setProgress(progress, true)
         } else {
-            mapLoadingIndicator.progress = progress
+            mapLoadingIndicator?.progress = progress
         }
     }
 
     private fun setOffline() {
-        mapViewOfflineItem.visibility = View.VISIBLE
-        mapLoadingIndicator.visibility = View.GONE
-        mapViewDownload.visibility = View.GONE
+        mapViewOfflineItem?.visibility = View.VISIBLE
+        mapLoadingIndicator?.visibility = View.GONE
+        mapViewDownload?.visibility = View.GONE
     }
 
     private fun setLoaded() {
-        mapViewOfflineItem.visibility = View.GONE
-        mapLoadingIndicator.visibility = View.GONE
-        mapViewDownload.visibility = View.VISIBLE
+        mapViewOfflineItem?.visibility = View.GONE
+        mapLoadingIndicator?.visibility = View.GONE
+        mapViewDownload?.visibility = View.VISIBLE
     }
 
-    fun setImagePDF(file: File) {
+    private fun setImagePDF(file: File) {
         mapImageView?.apply {
             setMinimumTileDpi(120)
             setBitmapDecoderFactory { PDFDecoder(0, file, 10f) }
@@ -188,7 +188,7 @@ class MapViewFragment : Fragment() {
         }
     }
 
-    fun setImageStandard(url: String) {
+    private fun setImageStandard(url: String) {
         Log.d("progressTest", "loading standard bitmap")
         GlideApp.with(this@MapViewFragment)
             .asBitmap()
@@ -197,7 +197,7 @@ class MapViewFragment : Fragment() {
             }
             .into(object : CustomViewTarget<View, Bitmap>(mapImageView) {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    mapImageView.setImage(ImageSource.cachedBitmap(resource))
+                    mapImageView?.setImage(ImageSource.cachedBitmap(resource))
                     setLoaded()
                     startPostponedEnterTransition()
                     Log.d("sharedElementTransition", "starting postponed map view transition")

@@ -40,7 +40,7 @@ class AreaItem : ConstraintLayout, KoinComponent {
         areaName.text = area.name
         areaMaps.text = String.format(context.getString(R.string.map_count), area.maps.size)
         areaLikeButton.apply {
-            isLiked = area.isFavorite()
+            isLiked = area.favorite
             setOnLikeListener(object : OnLikeListener {
                 override fun liked(p0: LikeButton?) {
                     onFavoriteListener?.invoke(area, true)

@@ -45,7 +45,7 @@ class MapItem : ConstraintLayout {
         }
 
         mapListFavoriteButton.apply {
-            isLiked = map.isFavorite()
+            isLiked = map.favorite
             setOnLikeListener(object : OnLikeListener {
                 override fun liked(p0: LikeButton?) {
                     onFavoriteListener?.invoke(map, true)
