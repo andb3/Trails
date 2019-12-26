@@ -19,6 +19,9 @@ import de.Maxr1998.modernpreferences.helpers.*
 
 object SettingsLayout {
     fun create(context: Context) = screen(context){
+
+        preferenceFileName = KEY_SHAREDPREFS_NAME
+
         title("settings_title"){
             titleRes = R.string.settings_title
         }

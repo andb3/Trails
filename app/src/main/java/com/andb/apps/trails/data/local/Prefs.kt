@@ -3,6 +3,7 @@ package com.andb.apps.trails.data.local
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
+import com.andb.apps.trails.BuildConfig
 import com.chibatching.kotpref.KotprefModel
 import com.chibatching.kotpref.execute
 import com.chibatching.kotpref.pref.AbstractPref
@@ -10,6 +11,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+
+const val KEY_SHAREDPREFS_NAME = BuildConfig.APPLICATION_ID + "_prefs"
 
 const val KEY_SORT_REGIONS = "exploreSortRegions"
 const val KEY_SORT_AREAS = "exploreSortAreas"
@@ -19,6 +22,9 @@ const val KEY_FAVORITES_ORDER_MAP = "favoritesOrderMap"
 const val KEY_FAVORITES_ORDER_AREA = "favoritesOrderArea"
 
 object Prefs : KotprefModel() {
+
+    override val kotprefName: String
+        get() = KEY_SHAREDPREFS_NAME
 
     var lastRegionsUpdate by longPref()
     var lastAreasUpdate by longPref()
