@@ -56,6 +56,14 @@ fun dpToPx(dp: Int): Int {
     return (dp * scale).toInt()
 }
 
+fun pxToDp(px: Int):Int {
+    val scale = Resources.getSystem().displayMetrics.density
+    return (px/scale).toInt()
+}
+
+val Int.dp
+    get() = dpToPx(this)
+
 fun newIoThread(block: suspend CoroutineScope.() -> Unit): Job {
     return CoroutineScope(Dispatchers.IO).launch(block = block)
 }

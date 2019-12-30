@@ -78,7 +78,7 @@ class ExploreViewModel(val regionsRepo: RegionsRepository, val areasRepo: AreasR
         return regionStack.size == 0
     }
 
-    private fun isBaseRegion(): Boolean {
+    fun isBaseRegion(): Boolean {
         return regionStack.size <= 1
     }
 

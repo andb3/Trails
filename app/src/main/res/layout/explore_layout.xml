@@ -19,50 +19,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-<!--    <androidx.core.widget.NestedScrollView
-        android:id="@+id/exploreNestedScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">-->
-<!--            <include
-                android:id="@+id/exploreHeader"
-                android:visibility="visible"
-                layout="@layout/explore_header"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                />-->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/exploreRegionRecycler"
+    <com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
+        android:id="@+id/exploreRecyclerFastScroller"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layoutAnimation="@anim/rv_slide_from_bottom_layout_anim"
-        android:nestedScrollingEnabled="true"
+        android:clipToPadding="false"
+        app:fastScrollEnabled="false"
+        app:handleDrawable="@drawable/fast_scroll_thumb_selector"
+        app:handleHeight="48dp"
+        app:handleWidth="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="@dimen/recycler_max_width">
+        app:layout_constraintWidth_max="@dimen/recycler_max_width"
+        app:popupDrawable="@drawable/fast_scroll_popup_selector"
+        app:trackDrawable="@drawable/fast_scroll_line_selector">
 
-    </androidx.recyclerview.widget.RecyclerView>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/exploreRegionRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:clipChildren="false"
+            android:layoutAnimation="@anim/rv_slide_from_bottom_layout_anim" />
 
-<!--            <include
-                android:id="@+id/exploreOfflineItem"
-                layout="@layout/offline_item"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|center_vertical"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:visibility="gone" />
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>-->
-
-
+    </com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

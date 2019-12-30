@@ -15,6 +15,7 @@ import com.andb.apps.trails.data.model.SkiRegionTree
 import com.andb.apps.trails.ui.common.AreaItem
 import com.andb.apps.trails.util.*
 import com.google.android.material.chip.Chip
+import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
 import kotlinx.android.synthetic.main.explore_header.view.*
 import kotlinx.android.synthetic.main.offline_item.view.*
 import kotlinx.android.synthetic.main.region_item.view.*
@@ -24,7 +25,8 @@ const val EXPLORE_AREA_ITEM_TYPE = 32940
 const val EXPLORE_REGION_ITEM_TYPE = 34987
 const val EXPLORE_OFFLINE_ITEM_TYPE = 84123
 
-class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+    RecyclerViewFastScroller.OnPopupTextUpdate {
 
     private var parentTree: SkiRegionTree? = null
     private var offline = true
@@ -41,15 +43,27 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = when (viewType) {
-            EXPLORE_HEADER_ITEM_TYPE -> LayoutInflater.from(parent.context).inflate(R.layout.explore_header, parent, false)
-            EXPLORE_REGION_ITEM_TYPE -> LayoutInflater.from(parent.context).inflate(R.layout.region_item, parent, false)
+            EXPLORE_HEADER_ITEM_TYPE -> LayoutInflater.from(parent.context).inflate(
+                R.layout.explore_header,
+                parent,
+                false
+            )
+            EXPLORE_REGION_ITEM_TYPE -> LayoutInflater.from(parent.context).inflate(
+                R.layout.region_item,
+                parent,
+                false
+            )
             EXPLORE_AREA_ITEM_TYPE -> AreaItem(parent.context).also {
                 it.layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 )
             }
-            else -> LayoutInflater.from(parent.context).inflate(R.layout.offline_item, parent, false)
+            else -> LayoutInflater.from(parent.context).inflate(
+                R.layout.offline_item,
+                parent,
+                false
+            )
         }
 
         return VH(view)
@@ -73,8 +87,10 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         onRegionClickListener?.invoke(regionTree)
                     }
 
-                    regionChildrenChip1.visibility = if ((regionTree.childRegions.size + regionTree.childAreas.size) > 0) View.VISIBLE else View.GONE
-                    regionChildrenChip2.visibility = if ((regionTree.childRegions.size + regionTree.childAreas.size) > 1) View.VISIBLE else View.GONE
+                    regionChildrenChip1.visibility =
+                        if ((regionTree.childRegions.size + regionTree.childAreas.size) > 0) View.VISIBLE else View.GONE
+                    regionChildrenChip2.visibility =
+                        if ((regionTree.childRegions.size + regionTree.childAreas.size) > 1) View.VISIBLE else View.GONE
 
 
 
@@ -112,7 +128,10 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
             EXPLORE_HEADER_ITEM_TYPE -> {
                 holder.itemView.apply {
-                    exploreHeaderRegionName.text = if (!parentTree?.name.isNullOrEmpty()) parentTree!!.name else resources.getString(R.string.offline_error_title)
+                    exploreHeaderRegionName.text =
+                        if (!parentTree?.name.isNullOrEmpty()) parentTree!!.name else resources.getString(
+                            R.string.offline_error_title
+                        )
                     switchRegionButton.apply {
                         visibility = if (parentTree?.isBase() != false) View.VISIBLE else View.GONE
                         setOnClickListener {
@@ -163,8 +182,18 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             attachedRecyclerView?.scrollToPosition(0)
         } else {
             newIoThread {
-                val regionDiff = DiffUtil.calculateDiff(RegionDiffCallback(parentTree!!.childRegions, tree.childRegions))
-                val areaDiff = DiffUtil.calculateDiff(AreaDiffCallback(parentTree!!.childAreas, tree.childAreas))
+                val regionDiff = DiffUtil.calculateDiff(
+                    RegionDiffCallback(
+                        parentTree!!.childRegions,
+                        tree.childRegions
+                    )
+                )
+                val areaDiff = DiffUtil.calculateDiff(
+                    AreaDiffCallback(
+                        parentTree!!.childAreas,
+                        tree.childAreas
+                    )
+                )
                 mainThread {
                     parentTree = tree
                     offline = tree.offline
@@ -227,6 +256,17 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         attachedRecyclerView = recyclerView
+    }
+
+    override fun onChange(position: Int): CharSequence {
+        val treeFinal = parentTree
+        return when {
+            treeFinal == null -> ""
+            treeFinal.childAreas.isNotEmpty() && position < treeFinal.childAreas.size -> treeFinal.childAreas[position].name.subSequence(0, 1)
+            treeFinal.childRegions.isNotEmpty() && position < treeFinal.childRegions.size -> treeFinal.childRegions[position].name.subSequence(0, 1)
+            else -> ""
+
+        }
     }
 
 }
