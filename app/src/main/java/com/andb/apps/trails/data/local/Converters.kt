@@ -1,5 +1,6 @@
 package com.andb.apps.trails.data.local
 
+import androidx.annotation.Keep
 import androidx.room.TypeConverter
 import com.andb.apps.trails.data.model.SkiAreaDetails
 import com.andb.apps.trails.data.model.Thumbnail
@@ -7,6 +8,7 @@ import com.squareup.moshi.Moshi
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 
+@Keep
 class Converters : KoinComponent{
     val moshi: Moshi by inject()
     private val intListAdapter = moshi.adapter<List<Int>>(List::class.java)

@@ -9,12 +9,14 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.andb.apps.trails.BuildConfig
 import com.andb.apps.trails.R
-import com.andb.apps.trails.TestActivity
-import com.andb.apps.trails.data.local.*
+import com.andb.apps.trails.data.local.KEY_NIGHT_MODE
+import com.andb.apps.trails.data.local.KEY_SHAREDPREFS_NAME
+import com.andb.apps.trails.data.local.KEY_STARTING_REGION
+import com.andb.apps.trails.data.local.Prefs
 import com.andb.apps.trails.ui.settings.preferences.dialog
 import com.andb.apps.trails.ui.settings.preferences.dropdown
-import com.andb.apps.trails.ui.settings.preferences.license
 import com.andb.apps.trails.ui.settings.preferences.title
+import com.andb.apps.trails.ui.test.TestActivity
 import de.Maxr1998.modernpreferences.helpers.*
 
 object SettingsLayout {
@@ -37,7 +39,7 @@ object SettingsLayout {
             }
         }
 
-        dropdown(KEY_SORT_REGIONS){
+/*        dropdown(KEY_SORT_REGIONS){
             titleRes = R.string.settings_sort_regions
             iconRes = R.drawable.ic_sort_black_24dp
             items = context.resources.getStringArray(R.array.settings_sort_options)
@@ -49,7 +51,7 @@ object SettingsLayout {
             iconRes = R.drawable.ic_sort_black_24dp
             items = context.resources.getStringArray(R.array.settings_sort_options)
             initalSelectedPosition = { getInt(0) }
-        }
+        }*/
 
 
         dialog(KEY_NIGHT_MODE){
@@ -106,11 +108,7 @@ object SettingsLayout {
                 titleRes = R.string.settings_about_licenses
             }
 
-            license("pref_moshi") {
-                title = "Moshi"
-                summary = "Apache License 2.0"
-            }
-
+            licenses()
         }
 
         pref("powered_by"){

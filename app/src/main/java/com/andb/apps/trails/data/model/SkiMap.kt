@@ -1,5 +1,6 @@
 package com.andb.apps.trails.data.model
 
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -31,5 +32,6 @@ data class SkiMap(
 
 fun String.isPdf(): Boolean = takeLast(4) == ".pdf"
 
+@Keep
 data class Thumbnail(val width: Int, val height: Int, val url: String)
 

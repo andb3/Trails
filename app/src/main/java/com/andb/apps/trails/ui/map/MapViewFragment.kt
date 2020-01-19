@@ -29,6 +29,7 @@ import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.like.LikeButton
 import com.like.OnLikeListener
@@ -57,7 +58,6 @@ class MapViewFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-
         return inflater.inflate(R.layout.map_view, container!!.parent as ViewGroup, false)
     }
 
@@ -100,9 +100,18 @@ class MapViewFragment : Fragment() {
             override fun unLiked(likeButton: LikeButton?) {
                 viewModel.favoriteMap(false)
             }
-
         })
 
+        val bottomSheetBehavior = BottomSheetBehavior.from(mapViewBottomSheet)
+        bottomSheetBehavior.addBottomSheetCallback(object :
+            BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                bottomSheet.alpha = slideOffset
+            }
+
+            override fun onStateChanged(bottomSheet: View, newState: Int) {}
+        })
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     private val areaNameObserver = Observer<String> { areaName ->
@@ -207,7 +216,6 @@ class MapViewFragment : Fragment() {
                     setOffline()
                     startPostponedEnterTransition()
                 }
-
                 override fun onResourceCleared(placeholder: Drawable?) {}
             })
     }

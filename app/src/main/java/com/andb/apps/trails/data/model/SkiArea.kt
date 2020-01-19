@@ -1,10 +1,12 @@
 package com.andb.apps.trails.data.model
 
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.squareup.moshi.Json
 
+@Keep
 @Entity
 data class SkiArea(
     @PrimaryKey
@@ -29,6 +31,7 @@ data class SkiArea(
 
 }
 
+@Keep
 class SkiAreaDetails(
     val liftCount: Int? = null,
     val runCount: Int? = null,

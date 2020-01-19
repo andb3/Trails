@@ -20,6 +20,26 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+###################################### Kotlin ######################################
+# keep the class and specified members from being removed or renamed
+-keep class kotlin.jvm.internal.Lambda { *; }
+-keep class androidx.core.app.CoreComponentFactory { *; }
+-keep class kotlin.reflect.jvm.internal.impl.resolve.ExternalOverridabilityCondition { *; }
+-keep class kotlin.reflect.jvm.internal.impl.load.java.** { *; }
+-keep class com.andb.apps.trails.data.local.Converters { *; }
+-dontwarn org.jetbrains.annotations.**
+-keep class kotlin.Metadata { *; }
+-keepclassmembers class com.andb.apps.trails.data.model.** {
+    <init>(...);
+    <fields>;
+}
+
+-keepattributes SourceFile,LineNumberTable
+#-dontobfuscate
+#-optimizations !code/allocation/variable
+
+############################################################################ Moshi ############################################################################
+
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
 
@@ -82,45 +102,14 @@
     <fields>;
 }
 
+### moshi-kotlin ###
 -keep class kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoaderImpl
 
 -keepclassmembers class kotlin.Metadata {
     public <methods>;
 }
 
-# Retrofit does reflection on generic parameters. InnerClasses is required to use Signature and
-# EnclosingMethod is required to use InnerClasses.
--keepattributes Signature, InnerClasses, EnclosingMethod
-
-# Retrofit does reflection on method and parameter annotations.
--keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
-
-# Retain service method parameters when optimizing.
--keepclassmembers,allowshrinking,allowobfuscation interface * {
-    @retrofit2.http.* <methods>;
-}
-
-# Ignore annotation used for build tooling.
--dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
-
-# Ignore JSR 305 annotations for embedding nullability information.
--dontwarn javax.annotation.**
-
-# Guarded by a NoClassDefFoundError try/catch and only used when on the classpath.
--dontwarn kotlin.Unit
-
-# Top-level functions that can only be used by Kotlin.
--dontwarn retrofit2.KotlinExtensions
--dontwarn retrofit2.KotlinExtensions$*
-
-# With R8 full mode, it sees no subtypes of Retrofit interfaces since they are created with a Proxy
-# and replaces all potential values with null. Explicitly keeping the interfaces prevents this.
--if interface * { @retrofit2.http.* <methods>; }
--keep,allowobfuscation interface <1>
-
-# JSR 305 annotations are for embedding nullability information.
--dontwarn javax.annotation.**
-
+### okhttp3 ###
 # A resource is loaded with a relative path so the package of this class must be preserved.
 -keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
 
@@ -130,38 +119,3 @@
 # OkHttp platform used only on JVM and when Conscrypt dependency is available.
 -dontwarn okhttp3.internal.platform.ConscryptPlatform
 
-# Animal Sniffer compileOnly dependency to ensure APIs are compatible with older versions of Java.
--dontwarn org.codehaus.mojo.animal_sniffer.*
-
-
-
-
-#### OkHttp, Retrofit and Moshi
--dontwarn okhttp3.**
--dontwarn retrofit2.Platform$Java8
--dontwarn okio.**
--dontwarn javax.annotation.**
--keepclasseswithmembers class * {
-    @retrofit2.http.* <methods>;
-}
--keepclasseswithmembers class * {
-    @com.squareup.moshi.* <methods>;
-}
--keep @com.squareup.moshi.JsonQualifier interface *
--dontwarn org.jetbrains.annotations.**
--keep class kotlin.Metadata { *; }
--keepclassmembers class kotlin.Metadata {
-    public <methods>;
-}
-
--keepclassmembers class * {
-    @com.squareup.moshi.FromJson <methods>;
-    @com.squareup.moshi.ToJson <methods>;
-}
-
--keepnames @kotlin.Metadata class com.andb.apps.trails.data.model.**
--keep class com.andb.apps.trails.data.model.** { *; }
--keepclassmembers class com.andb.apps.trails.data.model.** { *; }
--keep class kotlin.reflect.jvm.internal.impl.serialization.deserialization.builtins.BuiltInsLoaderImpl
--dontwarn kotlin.reflect.jvm.internal.**
--keep class kotlin.reflect.jvm.internal.** { *; }

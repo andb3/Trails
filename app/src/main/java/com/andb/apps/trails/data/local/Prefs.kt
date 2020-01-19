@@ -85,7 +85,6 @@ internal class ListPref<T : Any>(
 ) : AbstractPref<List<T>>() {
 
     val moshi = Moshi.Builder().build()
-    val converters = Converters()
     private val stringAdapter = moshi.adapter<List<String>>(List::class.java)
 
     override fun getFromPreference(property: KProperty<*>, preference: SharedPreferences): List<T> {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mapView"
     android:layout_width="match_parent"
@@ -17,30 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
-        android:layout_width="match_parent"
-        android:layout_height="88dp"
-        android:background="@color/colorMapOverlay"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/skiMapAreaName"
-        app:layout_constraintVertical_bias="0.0">
-
-    </FrameLayout>
-
-    <ImageView
-        android:id="@+id/mapViewDownload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="0dp"
-        android:tint="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="@+id/mapImageView"
-        app:layout_constraintEnd_toStartOf="@+id/mapViewFavorite"
-        app:layout_constraintTop_toTopOf="@+id/frameLayout"
-        app:srcCompat="@drawable/ic_download_black_24dp" />
-
     <ProgressBar
         android:id="@+id/mapLoadingIndicator"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
@@ -53,61 +29,78 @@
         android:max="100"
         android:progress="30"
         android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center" />
 
-
-    <TextView
-        android:id="@+id/skiMapYear"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/map_year_placeholder"
-        android:textColor="@android:color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/skiMapAreaName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_marginBottom="8dp"
-        android:paddingTop="16dp"
-        android:text="@string/map_area_name_placeholder"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/skiMapYear"
-        app:layout_constraintStart_toStartOf="parent" />
-
-
-    <com.like.LikeButton
-        android:id="@+id/mapViewFavorite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:circle_end_color="@color/colorAccent"
-        app:circle_start_color="@color/colorSecondary"
-        app:dots_primary_color="@color/colorAccent"
-        app:dots_secondary_color="@color/colorSecondary"
-        app:icon_size="24dp"
-        app:icon_type="heart"
-        app:layout_constraintBottom_toBottomOf="@+id/frameLayout"
-        app:layout_constraintEnd_toEndOf="@+id/frameLayout"
-        app:layout_constraintTop_toTopOf="@+id/frameLayout"
-        app:like_drawable="@drawable/ic_favorite_accent_24dp"
-        app:unlike_drawable="@drawable/ic_favorite_border_white_24dp" />
 
     <include
         android:id="@+id/mapViewOfflineItem"
         layout="@layout/offline_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mapViewBottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorMapOverlay"
+        app:behavior_hideable="false"
+        app:behavior_peekHeight="48dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/mapViewDownload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:tint="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/mapViewFavorite"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_download_black_24dp" />
+
+        <com.like.LikeButton
+            android:id="@+id/mapViewFavorite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:circle_end_color="@color/colorAccent"
+            app:circle_start_color="@color/colorSecondary"
+            app:dots_primary_color="@color/colorAccent"
+            app:dots_secondary_color="@color/colorSecondary"
+            app:icon_size="24dp"
+            app:icon_type="heart"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:like_drawable="@drawable/ic_favorite_accent_24dp"
+            app:unlike_drawable="@drawable/ic_favorite_border_white_24dp" />
+
+        <TextView
+            android:id="@+id/skiMapYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="@string/map_year_placeholder"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/skiMapAreaName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"
+            android:paddingTop="16dp"
+            android:text="@string/map_area_name_placeholder"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/skiMapYear"
+            app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

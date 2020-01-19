@@ -1,7 +1,8 @@
-package com.andb.apps.trails
+package com.andb.apps.trails.ui.test
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.andb.apps.trails.R
 import com.andb.apps.trails.data.local.MapsDao
 import com.andb.apps.trails.data.model.isPdf
 import com.andb.apps.trails.util.mainThread

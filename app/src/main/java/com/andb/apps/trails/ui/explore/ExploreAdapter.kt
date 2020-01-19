@@ -261,9 +261,15 @@ class ExploreAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     override fun onChange(position: Int): CharSequence {
         val treeFinal = parentTree
         return when {
-            treeFinal == null -> ""
-            treeFinal.childAreas.isNotEmpty() && position < treeFinal.childAreas.size -> treeFinal.childAreas[position].name.subSequence(0, 1)
-            treeFinal.childRegions.isNotEmpty() && position < treeFinal.childRegions.size -> treeFinal.childRegions[position].name.subSequence(0, 1)
+            treeFinal == null || position <= 0 -> ""
+            treeFinal.childAreas.isNotEmpty() && position - 1 < treeFinal.childAreas.size -> treeFinal.childAreas[position - 1].name.subSequence(
+                0,
+                1
+            )
+            treeFinal.childRegions.isNotEmpty() && position - 1 < treeFinal.childRegions.size -> treeFinal.childRegions[position - 1].name.subSequence(
+                0,
+                1
+            )
             else -> ""
 
         }

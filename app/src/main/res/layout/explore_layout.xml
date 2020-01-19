@@ -27,7 +27,7 @@
         app:fastScrollEnabled="false"
         app:handleDrawable="@drawable/fast_scroll_thumb_selector"
         app:handleHeight="48dp"
-        app:handleWidth="16dp"
+        app:handleWidth="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

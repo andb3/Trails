@@ -1,7 +1,6 @@
 package com.andb.apps.trails.ui.explore
 
 import android.animation.Animator
-import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import android.widget.ImageView
+import androidx.core.view.postDelayed
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,12 +18,12 @@ import com.andb.apps.trails.data.local.Prefs
 import com.andb.apps.trails.data.model.SkiRegionTree
 import com.andb.apps.trails.data.remote.Updater
 import com.andb.apps.trails.ui.area.openAreaView
-import com.andb.apps.trails.util.*
+import com.andb.apps.trails.util.newIoThread
 import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
 import kotlinx.android.synthetic.main.explore_layout.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.android.viewmodel.ext.android.viewModel
 
 
@@ -65,9 +66,7 @@ class ExploreFragment : Fragment() {
 
         viewModel.tree.observe(viewLifecycleOwner, onTreeChangeListener)
         viewModel.loading.observe(viewLifecycleOwner, onLoadingChangeListener)
-        viewModel.offline.observe(viewLifecycleOwner, onOfflineChangeListener)
-        //exploreRecyclerFastScroller.handleView.animateVisibility(!viewModel.isBaseRegion())
-
+        exploreRecyclerFastScroller.handleView.updatePadding(right = 0)
     }
 
     private val onTreeChangeListener = Observer<SkiRegionTree> { region ->
@@ -98,13 +97,22 @@ class ExploreFragment : Fragment() {
     }
 }
 
-val RecyclerViewFastScroller.handleView
+val RecyclerViewFastScroller.handleView: ImageView
     get() = findViewById<ImageView>(com.qtalk.recyclerviewfastscroller.R.id.thumbIV)
 
-private fun View.animateVisibility(makeVisible : Boolean = true) {
+private fun View.animateVisibility(makeVisible: Boolean, duration: Long = 150) {
     val scaleFactor: Float = if (makeVisible) 1f else 0f
+    Log.d("animateVisibility", "showing: $makeVisible")
     if(makeVisible) visibility = View.VISIBLE
-    this.animate().scaleY(scaleFactor).setDuration(150).onAnimationEnd{ Log.d("animateVisibility", "hiding: ${!makeVisible}"); if(!makeVisible) this.visibility = View.GONE}.start()
+    CoroutineScope(Dispatchers.Main).launch {
+        animate().scaleY(scaleFactor).setDuration(duration).start()
+        postDelayed(duration) {
+            Log.d(
+                "animateVisibility",
+                "hiding: ${!makeVisible}"
+            ); if (!makeVisible) visibility = View.GONE
+        }
+    }
 }
 
 private inline fun ViewPropertyAnimator.onAnimationCancelled(crossinline body: () -> Unit){
@@ -118,9 +126,11 @@ private inline fun ViewPropertyAnimator.onAnimationCancelled(crossinline body: (
 private inline fun ViewPropertyAnimator.onAnimationEnd(crossinline body: () -> Unit):ViewPropertyAnimator{
     this.setListener(object : Animator.AnimatorListener{
         override fun onAnimationRepeat(p0: Animator?) {}
-        override fun onAnimationEnd(p0: Animator?) {}
+        override fun onAnimationEnd(p0: Animator?) {
+            body()
+        }
         override fun onAnimationStart(p0: Animator?) {}
-        override fun onAnimationCancel(p0: Animator?) { body() }
+        override fun onAnimationCancel(p0: Animator?) {}
     })
     return this
 }
