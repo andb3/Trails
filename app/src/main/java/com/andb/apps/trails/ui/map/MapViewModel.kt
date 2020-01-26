@@ -12,7 +12,7 @@ import com.snakydesign.livedataextensions.map
 class MapViewModel(val areasRepo: AreasRepository, val mapsRepo: MapsRepository, val fileDownloader: FileDownloader) :
     ViewModel() {
 
-    private val mapID: MutableLiveData<Int> = InitialLiveData(-1)
+    private val mapID: MutableLiveData<Int> = InitialLiveData(-1, emitInitial = false)
     private val skiMap: LiveData<SkiMap?> = mapID.mapSuspend { mapsRepo.getMapByID(it) }
 
     val year: LiveData<Int> = skiMap.map { it?.year }.notNull()

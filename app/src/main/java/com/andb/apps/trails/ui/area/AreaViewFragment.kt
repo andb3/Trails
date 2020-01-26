@@ -20,7 +20,10 @@ import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.model.SkiMap
 import com.andb.apps.trails.data.model.SkiRegion
 import com.andb.apps.trails.ui.common.MapItem
-import com.andb.apps.trails.util.*
+import com.andb.apps.trails.util.dpToPx
+import com.andb.apps.trails.util.putArguments
+import com.andb.apps.trails.util.showIfAvailable
+import com.andb.apps.trails.util.time
 import com.github.rongi.klaster.Klaster
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.area_layout.*
@@ -91,10 +94,6 @@ class AreaViewFragment : Fragment() {
 
     private val mapsObserver = Observer<List<SkiMap>> { newMaps ->
         this.maps = newMaps.sortedByDescending { it.year }
-        if (!maps.map { it.id }.equalsUnordered(skiArea?.maps ?: listOf())) {
-            Log.d("areaFragmentOffline", "newMaps: ${maps.map { it.id }.sortedBy { it }}, area maps: ${skiArea?.maps?.sortedBy { it }}")
-            viewModel.offline.postValue(true)
-        }
         areaLoadingIndicator.visibility = View.GONE
         mapAdapter.notifyDataSetChanged()
         mapListRecycler.scrollToPosition(0)

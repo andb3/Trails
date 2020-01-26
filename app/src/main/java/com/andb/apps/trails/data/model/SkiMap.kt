@@ -25,12 +25,13 @@ data class SkiMap(
     @ColumnInfo(name = "map_favorite")
     var favorite = false
 
-    fun isPdf(): Boolean = url.takeLast(4) == ".pdf"
+    fun suffix(): String = url.takeLastWhile { it != '.' }
+    fun isPdf(): Boolean = suffix() == "pdf"
 
 }
 
 
-fun String.isPdf(): Boolean = takeLast(4) == ".pdf"
+fun String.isPdf(): Boolean = takeLast(4) == "pdf"
 
 @Keep
 data class Thumbnail(val width: Int, val height: Int, val url: String)

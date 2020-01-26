@@ -102,7 +102,13 @@ open class ListLiveData<T>(initialList: List<T> = emptyList()) : MediatorLiveDat
 }
 
 
-class InitialLiveData<T>(private val initialValue: T) : MediatorLiveData<T>() {
+class InitialLiveData<T>(private val initialValue: T, emitInitial: Boolean = true) :
+    MediatorLiveData<T>() {
+    init {
+        if (emitInitial) {
+            postValue(initialValue) // emit starting value
+        }
+    }
     override fun getValue(): T {
         return super.getValue() ?: initialValue
     }

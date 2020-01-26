@@ -17,6 +17,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
+import com.andb.apps.trails.BuildConfig
 import com.andb.apps.trails.R
 import com.andb.apps.trails.data.model.isPdf
 import com.andb.apps.trails.util.FileDownloader
@@ -112,6 +113,17 @@ class MapViewFragment : Fragment() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {}
         })
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+        if (BuildConfig.DEBUG) {
+            mapViewBottomSheet.setOnLongClickListener {
+                Snackbar.make(
+                    it,
+                    "Map: id = $mapKey, image = ${viewModel.imageURL.value}",
+                    Snackbar.LENGTH_LONG
+                ).show()
+                true
+            }
+        }
     }
 
     private val areaNameObserver = Observer<String> { areaName ->
