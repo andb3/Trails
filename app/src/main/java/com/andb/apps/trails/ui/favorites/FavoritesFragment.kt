@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
@@ -15,8 +16,10 @@ import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.model.SkiMap
 import com.andb.apps.trails.data.repository.AreasRepository
 import com.andb.apps.trails.ui.common.AreaItem
+import com.andb.apps.trails.ui.common.EmptyItem
 import com.andb.apps.trails.ui.common.MapItem
 import com.andb.apps.trails.ui.settings.SettingsFragment
+import com.andb.apps.trails.util.dp
 import com.andb.apps.trails.util.equalsUnordered
 import com.andb.apps.trails.util.mainThread
 import com.andb.apps.trails.util.newIoThread
@@ -31,6 +34,7 @@ const val MAP_DIVIDER_TYPE = 28903
 const val AREA_DIVIDER_TYPE = 23890
 const val MAP_ITEM_TYPE = 87234
 const val AREA_ITEM_TYPE = 98123
+const val EMPTY_ITEM_TYPE = 93473
 
 class FavoritesFragment : Fragment() {
 
@@ -95,7 +99,7 @@ class FavoritesFragment : Fragment() {
             }
         }
 
-        viewModel.getFavoriteMaps().observe(viewLifecycleOwner, Observer { newMaps ->
+        viewModel.maps.observe(viewLifecycleOwner, Observer { newMaps ->
             val refreshNeeded = !newMaps.equalsUnordered(maps)
             maps.clear()
             maps.addAll(newMaps)
@@ -103,7 +107,7 @@ class FavoritesFragment : Fragment() {
                 refresh()
             }
         })
-        viewModel.getFavoriteAreas().observe(viewLifecycleOwner, Observer { newAreas ->
+        viewModel.areas.observe(viewLifecycleOwner, Observer { newAreas ->
             val refreshNeeded = !newAreas.equalsUnordered(areas)
             areas.clear()
             areas.addAll(newAreas)
@@ -122,7 +126,7 @@ class FavoritesFragment : Fragment() {
 
 
     private fun favoritesAdapter() = Klaster.get()
-        .itemCount { maps.size + areas.size + 2 /*dividers*/ }
+        .itemCount { (maps.size + areas.size).coerceAtLeast(1) + 2 /*dividers*/ }
         .view { viewType, parent ->
             when (viewType) {
                 MAP_DIVIDER_TYPE, AREA_DIVIDER_TYPE -> layoutInflater.inflate(
@@ -130,13 +134,14 @@ class FavoritesFragment : Fragment() {
                     parent,
                     false
                 )
-                MAP_ITEM_TYPE -> MapItem(
-                    context ?: this.requireContext()
-                ).also {
+                MAP_ITEM_TYPE -> MapItem(requireContext()).also {
                     it.layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
                     )
+                }
+                EMPTY_ITEM_TYPE -> EmptyItem(requireContext()).also {
+                    it.updatePadding(top = 96.dp)
                 }
                 else -> AreaItem(context ?: this.requireContext()).also {
                     it.layoutParams = ViewGroup.LayoutParams(
@@ -165,10 +170,11 @@ class FavoritesFragment : Fragment() {
                     favoriteDividerText.text = getString(R.string.favorites_area_divider_text)
                 }
                 MAP_ITEM_TYPE -> {
-                    if(adapterPosition>=0) {
+                    if (adapterPosition >= 0) {
                         val map = maps[adapterPosition - 1 /*divider*/]
                         newIoThread {
-                            val area = areasRepo.getAreaByID(map.parentID)//should already be downloaded i.e. instantaneous
+                            val area =
+                                areasRepo.getAreaByID(map.parentID)//should already be downloaded i.e. instantaneous
                             mainThread {
                                 (itemView as MapItem).apply {
                                     setup(map, area?.name ?: "", true)
@@ -191,9 +197,20 @@ class FavoritesFragment : Fragment() {
                         }
                     }
                 }
+                EMPTY_ITEM_TYPE -> {
+                    (itemView as EmptyItem).apply {
+                        title = resources.getString(R.string.empty_favorites_title)
+                        summary = resources.getString(R.string.empty_favorites_summary)
+                        icon = resources.getDrawable(R.drawable.ic_favorite_black_24dp)
+                        isButtonVisible = false
+                    }
+                }
             }
         }
         .getItemViewType { position ->
+            if (maps.isEmpty() && areas.isEmpty() && position == 2) {
+                return@getItemViewType EMPTY_ITEM_TYPE
+            }
             when (position) {
                 0 -> MAP_DIVIDER_TYPE
                 in 1..maps.size -> MAP_ITEM_TYPE

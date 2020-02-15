@@ -3,4 +3,15 @@
     <declare-styleable name="NonSwipeViewPager">
         <attr name="swipeable" format="boolean" />
     </declare-styleable>
+    <declare-styleable name="CircleView">
+        <attr name="color" format="color" />
+    </declare-styleable>
+    <declare-styleable name="EmptyItem">
+        <attr name="emptyTitle" format="string" />
+        <attr name="emptySummary" format="string" />
+        <attr name="emptyIcon" format="reference" />
+        <attr name="buttonText" format="string" />
+        <attr name="buttonIcon" format="reference" />
+        <attr name="showButton" format="boolean" />
+    </declare-styleable>
 </resources>

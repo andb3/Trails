@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageView
+import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
@@ -20,12 +21,9 @@ import androidx.lifecycle.Observer
 import com.andb.apps.trails.BuildConfig
 import com.andb.apps.trails.R
 import com.andb.apps.trails.data.model.isPdf
-import com.andb.apps.trails.util.FileDownloader
-import com.andb.apps.trails.util.applyEach
+import com.andb.apps.trails.util.*
 import com.andb.apps.trails.util.glide.GlideApp
 import com.andb.apps.trails.util.glide.loadWithProgress
-import com.andb.apps.trails.util.mainThread
-import com.andb.apps.trails.util.newIoThread
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.davemorrissey.labs.subscaleview.ImageSource
@@ -58,8 +56,12 @@ class MapViewFragment : Fragment() {
         Log.d("initialized fragment", "mapKey: $mapKey, transitionName: $transitionName")
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.map_view, container!!.parent as ViewGroup, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.map_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -87,10 +89,7 @@ class MapViewFragment : Fragment() {
         }
 
         mapViewDownload.setOnClickListener { clickedView ->
-            viewModel.downloadCurrent {
-                Snackbar.make(clickedView, "Downloading", Snackbar.LENGTH_SHORT)
-                    .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
-            }
+            createSharingMenu(clickedView).show()
         }
 
         mapViewFavorite.setOnLikeListener(object : OnLikeListener {
@@ -104,21 +103,18 @@ class MapViewFragment : Fragment() {
         })
 
         val bottomSheetBehavior = BottomSheetBehavior.from(mapViewBottomSheet)
-        bottomSheetBehavior.addBottomSheetCallback(object :
-            BottomSheetBehavior.BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                bottomSheet.alpha = slideOffset
-            }
-
-            override fun onStateChanged(bottomSheet: View, newState: Int) {}
-        })
+        bottomSheetBehavior.setOnSlideListener { bottomSheet, slideOffset ->
+            bottomSheet.alpha = slideOffset
+        }
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
 
         if (BuildConfig.DEBUG) {
             mapViewBottomSheet.setOnLongClickListener {
+                val url = viewModel.imageURL.value
+                Log.d("mapDebug", "url = $url")
                 Snackbar.make(
                     it,
-                    "Map: id = $mapKey, image = ${viewModel.imageURL.value}",
+                    "Map: id = $mapKey, url = $url",
                     Snackbar.LENGTH_LONG
                 ).show()
                 true
@@ -156,6 +152,44 @@ class MapViewFragment : Fragment() {
         }
     }
 
+    private fun createSharingMenu(clickedView: View): PopupMenu {
+        val menu = PopupMenu(clickedView.context, clickedView)
+        menu.inflate(R.menu.map_view_share)
+        menu.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.mapViewShare -> {
+                    shareMap(clickedView.context)
+                    true
+                }
+                R.id.mapViewDownload -> {
+                    downloadMap()
+                    true
+                }
+                else -> false
+            }
+        }
+        return menu
+    }
+
+    private fun shareMap(context: Context) {
+        viewModel.share(context) {
+            Snackbar.make(
+                requireView(),
+                R.string.map_view_share_wip,
+                Snackbar.LENGTH_SHORT
+            ).setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
+        }
+    }
+
+    private fun downloadMap() {
+        viewModel.downloadCurrent {
+            Snackbar.make(
+                requireView(),
+                R.string.map_view_download_popup,
+                Snackbar.LENGTH_SHORT
+            ).setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
+        }
+    }
 
     private fun setLoading() {
         mapViewOfflineItem?.visibility = View.GONE
@@ -228,6 +262,7 @@ class MapViewFragment : Fragment() {
                     setOffline()
                     startPostponedEnterTransition()
                 }
+
                 override fun onResourceCleared(placeholder: Drawable?) {}
             })
     }

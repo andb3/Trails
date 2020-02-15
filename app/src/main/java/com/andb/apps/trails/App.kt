@@ -102,19 +102,19 @@ class App : Application() {
         Log.d("once", "areaLoad: ${Once.beenDone(TimeUnit.DAYS, 1, "areaLoad")}")
         Log.d("once", "mapLoad: ${Once.beenDone(TimeUnit.DAYS, 1, "mapLoad")}")
 
-        if (!Once.beenDone(TimeUnit.DAYS, 1, "regionLoad")) {
+        if (Updater.regionUpdateNeeded()) {
             newIoThread {
                 Updater.updateRegions()
             }
         }
 
-        if (!Once.beenDone(TimeUnit.DAYS, 1, "areaLoad")) {
+        if (Updater.areaUpdateNeeded()) {
             newIoThread {
                 Updater.updateAreas()
             }
         }
 
-        if (!Once.beenDone(TimeUnit.DAYS, 1, "mapLoad")) {
+        if (Updater.mapUpdateNeeded()) {
             newIoThread {
                 Updater.updateMaps()
             }
