@@ -4,7 +4,6 @@ import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.model.SkiMap
 import com.andb.apps.trails.data.model.SkiRegion
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MapService {
@@ -12,13 +11,11 @@ interface MapService {
     @GET("maps/count")
     suspend fun getMapCount(): Int
 
-    /**Get allRegionsLD maps from backend**/
+    /**Get maps from backend
+     * @param lastUpdate Unix timestamp of last request so backend only delivers updates (0 to get all maps)
+     **/
     @GET("maps")
-    suspend fun getAllMaps(): List<SkiMap>
-
-    /**Get updated maps from backend**/
-    @GET("maps/new")
-    suspend fun getMapUpdates(@Query("last") lastUpdate: Long): List<SkiMap>
+    suspend fun getMaps(@Query("last") lastUpdate: Long): List<SkiMap>
 }
 
 interface AreaService {
@@ -26,17 +23,11 @@ interface AreaService {
     @GET("areas/count")
     suspend fun getAreaCount(): Int
 
-    /**Get allRegionsLD areas from backend**/
+    /**Get updated areas from backend
+     * @param lastUpdate Unix timestamp of last request so backend only delivers updates (0 to get all areas)
+     **/
     @GET("areas")
-    suspend fun getAllAreas(): List<SkiArea>
-
-    /**Get specific area from backend**/
-    @GET("areas/{areaID}")
-    suspend fun getArea(@Path("areaID") areaID: Int): SkiArea
-
-    /**Get updated areas from backend**/
-    @GET("areas/new")
-    suspend fun getAreaUpdates(@Query("last") lastUpdate: Long): List<SkiArea>
+    suspend fun getAreas(@Query("last") lastUpdate: Long): List<SkiArea>
 }
 
 interface RegionService {
@@ -44,15 +35,9 @@ interface RegionService {
     @GET("regions/count")
     suspend fun getRegionCount(): Int
 
-    /**Get allRegionsLD regions from backend**/
+    /**Get regions from backend
+     * @param lastUpdate Unix timestamp of last request so backend only delivers updates (0 to get all regions)
+     **/
     @GET("regions")
-    suspend fun getAllRegions(): List<SkiRegion>
-
-    /**Get specific region from backend**/
-    @GET("regions/{regionID}")
-    suspend fun getRegion(@Path("regionID") regionID: Int): SkiRegion
-
-    /**Get updated regions from backend**/
-    @GET("regions/new")
-    suspend fun getRegionUpdates(@Query("last") lastUpdate: Long): List<SkiRegion>
+    suspend fun getRegions(@Query("last") lastUpdate: Long): List<SkiRegion>
 }

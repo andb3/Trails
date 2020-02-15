@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
@@ -95,7 +96,7 @@ class FavoritesFragment : Fragment() {
             }
         }
 
-        viewModel.getFavoriteMaps().observe(viewLifecycleOwner, Observer { newMaps ->
+        viewModel.maps.observe(viewLifecycleOwner, Observer { newMaps ->
             val refreshNeeded = !newMaps.equalsUnordered(maps)
             maps.clear()
             maps.addAll(newMaps)
@@ -103,13 +104,17 @@ class FavoritesFragment : Fragment() {
                 refresh()
             }
         })
-        viewModel.getFavoriteAreas().observe(viewLifecycleOwner, Observer { newAreas ->
+        viewModel.areas.observe(viewLifecycleOwner, Observer { newAreas ->
             val refreshNeeded = !newAreas.equalsUnordered(areas)
             areas.clear()
             areas.addAll(newAreas)
             if (refreshNeeded) {
                 refresh()
             }
+        })
+
+        viewModel.empty.observe(viewLifecycleOwner, Observer { empty ->
+            favoritesEmptyItem.isVisible = empty
         })
     }
 

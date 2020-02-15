@@ -2,7 +2,6 @@ package com.andb.apps.trails.ui.settings
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
@@ -17,6 +16,7 @@ import com.andb.apps.trails.ui.settings.preferences.dialog
 import com.andb.apps.trails.ui.settings.preferences.dropdown
 import com.andb.apps.trails.ui.settings.preferences.title
 import com.andb.apps.trails.ui.test.TestActivity
+import com.andb.apps.trails.util.openURL
 import de.Maxr1998.modernpreferences.helpers.*
 
 object SettingsLayout {
@@ -115,9 +115,7 @@ object SettingsLayout {
             titleRes = R.string.settings_powered_by
             iconRes = R.drawable.ic_language_black_24dp
             onClicked {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://SkiMap.org"))
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
+                openURL(context, "https://SkiMap.org")
                 return@onClicked true
             }
         }

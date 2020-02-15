@@ -1,5 +1,6 @@
 package com.andb.apps.trails.ui.map
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -24,6 +25,18 @@ class MapViewModel(val areasRepo: AreasRepository, val mapsRepo: MapsRepository,
 
     fun setMap(id: Int) {
         mapID.value = id
+    }
+
+    fun share(context: Context, onShare: (SkiMap) -> Unit) {
+        val currentMap = skiMap.value ?: return
+        /*val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            putExtra(Intent.EXTRA_STREAM, )
+            type = "image/ *"
+        }
+
+        val title = context.getString(R.string.map_view_share)
+        Intent.createChooser(, title) */
+        onShare.invoke(currentMap)
     }
 
     fun downloadCurrent(onDownloaded: (SkiMap) -> Unit) {

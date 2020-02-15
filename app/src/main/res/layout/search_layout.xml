@@ -60,4 +60,16 @@
         android:clipToPadding="false"
         android:paddingTop="96dp"
         tools:listitem="@layout/area_item" />
+
+    <com.andb.apps.trails.ui.common.EmptyItem
+        android:id="@+id/searchEmptyItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:buttonIcon="@drawable/ic_language_black_24dp"
+        app:buttonText="@string/empty_search_action"
+        app:emptyIcon="@drawable/ic_search_black_24dp"
+        app:emptySummary="@string/empty_search_summary"
+        app:emptyTitle="@string/empty_search_title" />
 </FrameLayout>

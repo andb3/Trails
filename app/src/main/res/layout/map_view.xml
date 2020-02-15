@@ -58,7 +58,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/mapViewFavorite"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_download_black_24dp" />
+            app:srcCompat="@drawable/ic_share_black_24dp" />
 
         <com.like.LikeButton
             android:id="@+id/mapViewFavorite"
@@ -83,7 +83,7 @@
             android:layout_margin="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginBottom="16dp"
-            android:text="@string/map_year_placeholder"
+            android:text="@string/map_view_year_placeholder"
             android:textColor="@android:color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -96,7 +96,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginBottom="8dp"
             android:paddingTop="16dp"
-            android:text="@string/map_area_name_placeholder"
+            android:text="@string/map_view_area_placeholder"
             android:textColor="@android:color/white"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/skiMapYear"

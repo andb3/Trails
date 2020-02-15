@@ -10,6 +10,7 @@ import jonathanfinerty.once.Once
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 
 object Updater : KoinComponent {
 
@@ -26,22 +27,24 @@ object Updater : KoinComponent {
     private val regionService = retrofit.create(RegionService::class.java)
     private val mapService = retrofit.create(MapService::class.java)
 
+    fun regionUpdateNeeded() = !Once.beenDone(TimeUnit.DAYS, 1, "regionLoad")
+    fun areaUpdateNeeded() = !Once.beenDone(TimeUnit.DAYS, 1, "areaLoad")
+    fun mapUpdateNeeded() = !Once.beenDone(TimeUnit.DAYS, 1, "mapLoad")
 
-    /**Refreshes regions from backend. Returns boolean indicating whether loading was successful**/
+    /**
+     * Refreshes regions from backend.
+     * @return Boolean indicating whether loading was successful
+     **/
     suspend fun updateRegions(): Boolean {
         loadingRegions.postValue(true)
         var loaded = false
 
         try {
-            if (regionsDao.getAllStatic().size < regionService.getRegionCount()) {
-                Log.d("updateRegions", "getting all")
-                val regions = regionService.getAllRegions()
-                regionsDao.insertMultipleRegions(regions)
-            } else {
-                Log.d("updateRegions", "getting updates only")
-                val newRegions = regionService.getRegionUpdates(Prefs.lastRegionsUpdate)
-                regionsDao.insertMultipleRegions(newRegions)
-            }
+            Log.d("updateRegions", "getting since ${Prefs.lastRegionsUpdate}")
+
+            val newRegions = regionService.getRegions(Prefs.lastRegionsUpdate)
+            regionsDao.insertMultipleRegions(newRegions)
+
             Prefs.lastRegionsUpdate = System.currentTimeMillis()
             Once.markDone("regionLoad")
             loaded = true
@@ -54,22 +57,24 @@ object Updater : KoinComponent {
         return loaded
     }
 
-    /**Refreshes areas from backend. Returns boolean indicating whether loading was successful**/
+    /**
+     * Refreshes areas from backend.
+     * @return Boolean indicating whether loading was successful
+     **/
     suspend fun updateAreas(): Boolean {
         loadingAreas.postValue(true)
         var loaded = false
-
         try {
-            if (areasDao.getAllStatic().size < areaService.getAreaCount()) {
-                Log.d("updateAreas", "getting all")
-                val areas = areaService.getAllAreas().filter { !it.name.isNullOrEmpty() }
-                Log.d("updateAreas", "null names - ${areas.filter { it.name.isNullOrEmpty() }}")
-                areasDao.insertMultipleAreas(areas)
-            } else {
-                Log.d("updateAreas", "getting updates only")
-                val newAreas = areaService.getAreaUpdates(Prefs.lastAreasUpdate)
-                areasDao.insertMultipleAreas(newAreas)
+            Log.d("updateAreas", "getting since ${Prefs.lastAreasUpdate}")
+            val areas =
+                areaService.getAreas(Prefs.lastAreasUpdate).filter { !it.name.isNullOrEmpty() }
+
+            //Preserve favorite status of updated areas
+            val currentAreas = areasDao.getAllStatic()
+            areas.forEach { new ->
+                new.favorite = currentAreas.find { old -> old.id == new.id }?.favorite ?: false
             }
+            areasDao.insertMultipleAreas(areas)
             Prefs.lastAreasUpdate = System.currentTimeMillis()
             Once.markDone("areaLoad")
             loaded = true
@@ -82,28 +87,32 @@ object Updater : KoinComponent {
         return loaded
     }
 
-    /**Refreshes maps from backend. Returns boolean indicating whether loading was successful**/
+    /**
+     * Refreshes maps from backend.
+     * @return Boolean indicating whether loading was successful
+     **/
     suspend fun updateMaps(): Boolean {
         loadingMaps.postValue(true)
         var loaded = false
-
         try {
-            if (mapsDao.getAllStatic().size < mapService.getMapCount()) {
-                val maps = mapService.getAllMaps()
-                mapsDao.insertMultipleMaps(maps)
-            } else {
-                val newMaps = mapService.getMapUpdates(Prefs.lastMapsUpdate)
-                mapsDao.insertMultipleMaps(newMaps)
+            Log.d("updateMaps", "getting since ${Prefs.lastMapsUpdate}")
+            val maps = mapService.getMaps(Prefs.lastMapsUpdate)
+
+            //Preserve favorite status of updated maps
+            val currentMaps = mapsDao.getAllStatic()
+            maps.forEach { new ->
+                new.favorite = currentMaps.find { old -> old.id == new.id }?.favorite ?: false
             }
+            mapsDao.insertMultipleMaps(maps)
             Prefs.lastMapsUpdate = System.currentTimeMillis()
             Once.markDone("mapLoad")
             loaded = true
         } catch (e: Exception) {
+            Log.d("updateMaps", "failed")
             e.printStackTrace()
         }
 
         loadingMaps.postValue(false)
         return loaded
-
     }
 }

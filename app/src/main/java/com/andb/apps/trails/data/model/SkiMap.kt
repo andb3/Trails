@@ -31,7 +31,7 @@ data class SkiMap(
 }
 
 
-fun String.isPdf(): Boolean = takeLast(4) == "pdf"
+fun String.isPdf(): Boolean = takeLast(3) == "pdf"
 
 @Keep
 data class Thumbnail(val width: Int, val height: Int, val url: String)

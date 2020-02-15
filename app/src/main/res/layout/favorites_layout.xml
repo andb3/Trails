@@ -19,4 +19,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_max="@dimen/recycler_max_width" />
+
+    <com.andb.apps.trails.ui.common.EmptyItem
+        android:id="@+id/favoritesEmptyItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:emptyIcon="@drawable/ic_favorite_black_24dp"
+        app:emptySummary="@string/empty_favorites_summary"
+        app:emptyTitle="@string/empty_favorites_title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:showButton="false" />
 </androidx.constraintlayout.widget.ConstraintLayout>

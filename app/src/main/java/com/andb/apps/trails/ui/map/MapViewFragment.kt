@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageView
+import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
@@ -87,10 +88,38 @@ class MapViewFragment : Fragment() {
         }
 
         mapViewDownload.setOnClickListener { clickedView ->
-            viewModel.downloadCurrent {
-                Snackbar.make(clickedView, "Downloading", Snackbar.LENGTH_SHORT)
-                    .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
+            PopupMenu(clickedView.context, clickedView).apply {
+                inflate(R.menu.map_view_share)
+                setOnMenuItemClickListener {
+                    when (it.itemId) {
+                        R.id.mapViewShare -> {
+                            viewModel.share(clickedView.context) {
+                                Snackbar.make(
+                                    clickedView,
+                                    R.string.map_view_share_wip,
+                                    Snackbar.LENGTH_SHORT
+                                )
+                                    .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
+                            }
+                            true
+                        }
+                        R.id.mapViewDownload -> {
+                            viewModel.downloadCurrent {
+                                Snackbar.make(
+                                    clickedView,
+                                    R.string.map_view_download_popup,
+                                    Snackbar.LENGTH_SHORT
+                                )
+                                    .setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
+                            }
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                show()
             }
+
         }
 
         mapViewFavorite.setOnLikeListener(object : OnLikeListener {
@@ -116,9 +145,11 @@ class MapViewFragment : Fragment() {
 
         if (BuildConfig.DEBUG) {
             mapViewBottomSheet.setOnLongClickListener {
+                val url = viewModel.imageURL.value
+                Log.d("mapDebug", "url = $url")
                 Snackbar.make(
                     it,
-                    "Map: id = $mapKey, image = ${viewModel.imageURL.value}",
+                    "Map: id = $mapKey, url = $url",
                     Snackbar.LENGTH_LONG
                 ).show()
                 true

@@ -48,8 +48,13 @@
 
     <!--Map Item / Map View-->
 
-    <string name="map_year_placeholder">Year</string>
-    <string name="map_area_name_placeholder">Area Name</string>
+    <string name="map_view_year_placeholder">Year</string>
+    <string name="map_view_area_placeholder">Area Name</string>
+    <string name="map_view_share">Share</string>
+    <string name="map_view_share_sheet_title">Share map: </string>
+    <string name="map_view_download">Download to Gallery</string>
+    <string name="map_view_download_popup">Download</string>
+    <string name="map_view_share_wip">Sharing isn\'t available yet, stay tuned</string>
 
 
     <!--Offline-->
@@ -58,6 +63,16 @@
     <string name="offline_error_desc">Any areas, regions, or maps you\'ve viewed will be available offline</string>
     <string name="offline_error_refresh">Refresh</string>
     <string name="downloading_notification_title">Downloading Map: %1$s %2$d</string>
+
+    <!--Empty-->
+    <string name="empty_favorites_title">No Favorites Yet</string>
+    <string name="empty_favorites_summary">Press the heart icon next to maps and areas to favorite them for easy access</string>
+    <string name="empty_search_title">No Results</string>
+    <string name="empty_search_summary">Search another term, or go to SkiMap.org to add a missing area</string>
+    <string name="empty_search_action">Add Area</string>
+    <string name="empty_area_title">No Maps</string>
+    <string name="empty_area_summary">Try another area, or go to SkiMap.org to add missing maps if you have them</string>
+    <string name="empty_area_action">Add Map</string>
 
 
     <!--Settings-->

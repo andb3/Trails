@@ -1,12 +1,17 @@
 package com.andb.apps.trails.util
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Resources
+import android.graphics.Rect
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DiffUtil
+import jonathanfinerty.once.Once
 import kotlinx.coroutines.*
 
 
@@ -45,7 +50,7 @@ fun <T> MutableCollection<T>.dropBy(amount: Int = 1) {
 }
 
 fun <T> Collection<T>.applyEach(block: T.() -> Unit) {
-    for (i in this){
+    for (i in this) {
         i.apply(block)
     }
 }
@@ -56,9 +61,9 @@ fun dpToPx(dp: Int): Int {
     return (dp * scale).toInt()
 }
 
-fun pxToDp(px: Int):Int {
+fun pxToDp(px: Int): Int {
     val scale = Resources.getSystem().displayMetrics.density
-    return (px/scale).toInt()
+    return (px / scale).toInt()
 }
 
 val Int.dp
@@ -110,7 +115,7 @@ fun time(tag: String = "timedOperation", block: () -> Unit) {
     Log.d(tag, "time: ${(end - start) / 1000000} ms")
 }
 
-fun filenameFromURL(url: String): String{
+fun filenameFromURL(url: String): String {
     return url.drop("https://skimap.org/data/".length).replace('/', '.')
 }
 
@@ -138,4 +143,30 @@ infix fun <T> Collection<T>.equalsUnordered(other: Collection<T>): Boolean {
 
 infix fun Int.toUnordered(to: Int): IntProgression {
     return if (this > to) to..this else this..to
+}
+
+fun doIfUndone(tag: String, scope: Int = Once.THIS_APP_INSTALL, block: () -> Unit) {
+    Log.d("doIfUndone", "tag = $tag, scope = $scope")
+    Log.d("doIfUndone", "beenDone = ${Once.beenDone(scope, tag)}")
+    if (!Once.beenDone(scope, tag)) {
+        block.invoke()
+        Once.markDone(tag)
+    }
+}
+
+fun View.getLocationOnScreen(): Pair<Int, Int> {
+    val array = IntArray(2)
+    this.getLocationOnScreen(array)
+    return Pair(array[0], array[1])
+}
+
+fun View.getRectOnScreen(): Rect {
+    val (x, y) = getLocationOnScreen()
+    return Rect(x, y, x + width, y + height)
+}
+
+fun openURL(context: Context, url: String) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    context.startActivity(intent)
 }
