@@ -44,6 +44,7 @@
     <string name="area_website_text">Website: %1$s</string>
     <string name="area_regions_text">Regions: %1$s</string>
     <string name="area_info_card_title">Info</string>
+    <string name="area_most_recent_map">\u0020• Most Recent</string>
 
 
     <!--Map Item / Map View-->

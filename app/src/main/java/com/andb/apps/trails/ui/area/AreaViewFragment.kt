@@ -67,7 +67,13 @@ class AreaViewFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mapListRecycler.layoutManager = GridLayoutManager(context, 2)
+        mapListRecycler.layoutManager = GridLayoutManager(context, 2).apply {
+            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    return if (position == 0) 2 else 1
+                }
+            }
+        }
 
         setupFab()
         setupScroll()
@@ -277,7 +283,7 @@ class AreaViewFragment : Fragment() {
         }
         .bind { position ->
             (itemView as MapItem).apply {
-                setup(maps[position], skiArea?.name ?: "")
+                setup(maps[position], skiArea?.name ?: "", mostRecent = position == 0)
                 setOnFavoriteListener { map, favorite ->
                     viewModel.favoriteMap(map, favorite)
                 }

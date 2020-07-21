@@ -21,7 +21,7 @@
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground">
 
-        <com.andb.apps.trails.ui.common.SquareImageView
+        <com.andb.apps.trails.ui.common.RatioImageView
             android:id="@+id/mapListItemImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -83,4 +83,14 @@
         app:layout_constraintTop_toTopOf="@+id/mapListItemYear"
         app:like_drawable="@drawable/ic_favorite_accent_24dp"
         app:unlike_drawable="@drawable/ic_favorite_border_black_24dp" />
+
+    <TextView
+        android:id="@+id/mostRecentText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/area_most_recent_map"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/mapListItemYear"
+        app:layout_constraintStart_toEndOf="@+id/mapListItemYear"
+        app:layout_constraintTop_toTopOf="@+id/mapListItemYear" />
 </androidx.constraintlayout.widget.ConstraintLayout>

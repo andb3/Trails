@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import com.andb.apps.trails.R
 import com.andb.apps.trails.data.model.SkiMap
 import com.andb.apps.trails.ui.map.openMapView
@@ -24,7 +25,13 @@ class MapItem : ConstraintLayout {
         inflate(context, R.layout.map_item, this)
     }
 
-    fun setup(map: SkiMap, areaName: String, favorite: Boolean = false) {
+    fun setup(
+        map: SkiMap,
+        areaName: String,
+        favorite: Boolean = false,
+        mostRecent: Boolean = false
+    ) {
+
         GlideApp.with(this)
             .load(map.thumbnails.last().url)
             .fitCenter()
@@ -43,6 +50,11 @@ class MapItem : ConstraintLayout {
         setOnClickListener {
             openMapView(map.id, context, mapListItemImage)
         }
+
+        if (mostRecent) {
+            mapListItemImage.ratio = Ratio(2, 1)
+        }
+        mostRecentText.isVisible = mostRecent
 
         mapListFavoriteButton.apply {
             isLiked = map.favorite
