@@ -1,13 +1,13 @@
 package com.andb.apps.trails.ui.favorites
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.model.SkiMap
 import com.andb.apps.trails.data.repository.AreasRepository
 import com.andb.apps.trails.data.repository.MapsRepository
 import com.andb.apps.trails.util.newIoThread
-import com.snakydesign.livedataextensions.map
-import com.snakydesign.livedataextensions.switchMap
 
 class FavoritesViewModel(val areasRepo: AreasRepository, val mapsRepo: MapsRepository) :
     ViewModel() {

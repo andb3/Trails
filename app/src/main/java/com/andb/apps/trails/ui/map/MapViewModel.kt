@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import com.andb.apps.trails.data.model.SkiMap
 import com.andb.apps.trails.data.repository.AreasRepository
 import com.andb.apps.trails.data.repository.MapsRepository
 import com.andb.apps.trails.util.*
-import com.snakydesign.livedataextensions.map
 
 class MapViewModel(val areasRepo: AreasRepository, val mapsRepo: MapsRepository, val fileDownloader: FileDownloader) :
     ViewModel() {

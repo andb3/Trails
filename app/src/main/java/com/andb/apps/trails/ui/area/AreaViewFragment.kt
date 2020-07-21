@@ -54,7 +54,7 @@ class AreaViewFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        areaKey = arguments!!.getInt("areaKey")
+        areaKey = requireArguments().getInt("areaKey")
     }
 
     override fun onCreateView(

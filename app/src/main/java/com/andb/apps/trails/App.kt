@@ -77,7 +77,7 @@ class App : Application() {
         }
         single {
             Retrofit.Builder()
-                .baseUrl("https://trailsbackend.ml/")
+                .baseUrl("https://skitrails.herokuapp.com/")
                 .client(get())
                 .addConverterFactory(MoshiConverterFactory.create(get()))
                 .build()

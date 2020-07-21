@@ -1,9 +1,6 @@
 package com.andb.apps.trails.ui.explore
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.andb.apps.trails.data.model.SkiArea
 import com.andb.apps.trails.data.model.SkiRegion
 import com.andb.apps.trails.data.model.SkiRegionTree
@@ -14,8 +11,6 @@ import com.andb.apps.trails.data.repository.RegionsRepository
 import com.andb.apps.trails.util.ListLiveData
 import com.andb.apps.trails.util.newIoThread
 import com.andb.apps.trails.util.notNull
-import com.snakydesign.livedataextensions.map
-import com.snakydesign.livedataextensions.switchMap
 
 class ExploreViewModel(val regionsRepo: RegionsRepository, val areasRepo: AreasRepository) :
     ViewModel() {

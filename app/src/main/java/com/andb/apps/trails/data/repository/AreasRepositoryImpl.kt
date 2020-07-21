@@ -1,10 +1,10 @@
 package com.andb.apps.trails.data.repository
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import com.andb.apps.trails.data.local.AreasDao
 import com.andb.apps.trails.data.local.Prefs
 import com.andb.apps.trails.data.model.SkiArea
-import com.snakydesign.livedataextensions.map
 
 class AreasRepositoryImpl(private val areasDao: AreasDao) : AreasRepository {
 

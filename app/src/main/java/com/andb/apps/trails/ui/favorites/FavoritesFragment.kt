@@ -72,12 +72,12 @@ class FavoritesFragment : Fragment() {
             adapter = favoritesAdapter
             dragDropWith {
                 dragDirection = DragDropper.DIRECTION_BOTH
-                constrainBy { vh ->
+                constrainDrag { vh ->
                     when (vh.itemViewType) {
-                        MAP_DIVIDER_TYPE -> Pair(0, 0)
-                        MAP_ITEM_TYPE -> Pair(1, maps.size)
-                        AREA_DIVIDER_TYPE -> Pair(maps.size + 1, maps.size + 1)
-                        else -> Pair(maps.size + 2, maps.size + 1 + areas.size)
+                        MAP_DIVIDER_TYPE -> 0..0
+                        MAP_ITEM_TYPE -> 1..maps.size
+                        AREA_DIVIDER_TYPE -> (maps.size + 1)..(maps.size + 1)
+                        else -> (maps.size + 2)..(maps.size + 1 + areas.size)
                     }
                 }
                 onDropped { oAdapterPos, nAdapterPos ->
