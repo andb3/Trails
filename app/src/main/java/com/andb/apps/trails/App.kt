@@ -72,6 +72,8 @@ class App : Application() {
             OkHttpClient.Builder()
                 .apply {
                     //if(BuildConfig.DEBUG) addInterceptor(MockInterceptor(androidContext()))
+                    connectTimeout(60, TimeUnit.SECONDS)
+                    readTimeout(60, TimeUnit.SECONDS)
                 }
                 .build()
         }
