@@ -17,7 +17,6 @@
         android:fitsSystemWindows="true"
         android:focusable="true"
         android:visibility="gone">
-
     </FrameLayout>
 
     <ProgressBar
@@ -127,18 +126,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_max="@dimen/recycler_max_width">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/areaViewName"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
                 android:layout_marginTop="32dp"
-                android:layout_marginEnd="32dp"
+                android:layout_marginEnd="24dp"
                 android:layout_marginBottom="24dp"
                 android:text="@string/map_view_area_placeholder"
                 android:textColor="?android:attr/textColorPrimary"
@@ -146,10 +144,18 @@
                 android:textStyle="bold"
                 android:transitionName="areaViewName"
                 app:layout_constraintBottom_toTopOf="@+id/mapListRecycler"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintEnd_toStartOf="@+id/likeButton"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <com.like.LikeButton
+                android:id="@+id/likeButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="32dp"
+                app:layout_constraintBottom_toBottomOf="@id/areaViewName"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/areaViewName" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/mapListRecycler"
@@ -159,7 +165,6 @@
                 android:layout_marginEnd="16dp"
                 android:layoutAnimation="@anim/rv_slide_from_bottom_layout_anim"
                 android:nestedScrollingEnabled="true"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/areaViewName"
@@ -185,7 +190,7 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone" />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

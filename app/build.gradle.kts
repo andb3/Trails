@@ -19,8 +19,8 @@ android {
         applicationId = "com.andb.apps.trails"
         minSdkVersion(21)
         targetSdkVersion(29)
-        versionCode = 4
-        versionName = "0.8.8"
+        versionCode = 5
+        versionName = "0.8.9"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {

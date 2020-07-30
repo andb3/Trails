@@ -24,7 +24,7 @@ interface AreasDao {
     fun deleteArea(area: SkiArea)
 
     @Query("SELECT * FROM SkiArea WHERE areaID = :id")
-    fun getAreaByID(id: Int): SkiArea?
+    fun getAreaByID(id: Int): SkiArea
 
     @Query("SELECT * FROM SkiArea")
     fun getAll(): LiveData<List<SkiArea>>

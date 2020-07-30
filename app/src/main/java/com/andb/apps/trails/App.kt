@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.room.Room
 import com.andb.apps.trails.data.local.Database
 import com.andb.apps.trails.data.local.Prefs
+import com.andb.apps.trails.data.model.MapTagAdapter
 import com.andb.apps.trails.data.remote.Updater
 import com.andb.apps.trails.data.repository.*
 import com.andb.apps.trails.ui.area.AreaViewModel
@@ -56,16 +57,30 @@ class App : Application() {
         single { SearchFragment() }
         single { SettingsFragment() }
 
-        viewModel { MainActivityViewModel(favoritesFragment = get(), exploreFragment = get(), searchFragment = get()) }
+        viewModel {
+            MainActivityViewModel(
+                favoritesFragment = get(),
+                exploreFragment = get(),
+                searchFragment = get()
+            )
+        }
         viewModel { FavoritesViewModel(areasRepo = get(), mapsRepo = get()) }
         viewModel { ExploreViewModel(regionsRepo = get(), areasRepo = get()) }
-        viewModel { AreaViewModel(regionsRepo = get(), areasRepo = get(), mapsRepo = get()) }
+        viewModel { (id: Int) ->
+            AreaViewModel(
+                regionsRepo = get(),
+                areasRepo = get(),
+                mapsRepo = get(),
+                areaID = id
+            )
+        }
         viewModel { MapViewModel(areasRepo = get(), mapsRepo = get(), fileDownloader = get()) }
         viewModel { SettingsViewModel(androidContext()) }
 
         single {
             Moshi.Builder()
                 .add(KotlinJsonAdapterFactory())
+                .add(MapTagAdapter())
                 .build()
         }
         single {

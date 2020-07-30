@@ -15,7 +15,7 @@ class AreasRepositoryImpl(private val areasDao: AreasDao) : AreasRepository {
         }
     }
 
-    override suspend fun getAreaByID(id: Int): SkiArea? = areasDao.getAreaByID(id)
+    override suspend fun getAreaByID(id: Int): SkiArea = areasDao.getAreaByID(id)
     override suspend fun search(text: String) = areasDao.search(text)
     override suspend fun updateFavorite(area: SkiArea, favorite: Boolean) {
         area.favorite = favorite

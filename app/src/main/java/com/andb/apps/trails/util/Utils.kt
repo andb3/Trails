@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DiffUtil
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import jonathanfinerty.once.Once
-import kotlinx.coroutines.*
 
 
 fun TextView.showIfAvailable(value: Int?, stringID: Int) {
@@ -70,17 +69,7 @@ fun pxToDp(px: Int): Int {
 val Int.dp
     get() = dpToPx(this)
 
-fun newIoThread(block: suspend CoroutineScope.() -> Unit): Job {
-    return CoroutineScope(Dispatchers.IO).launch(block = block)
-}
 
-suspend fun mainThread(block: suspend CoroutineScope.() -> Unit) {
-    withContext(Dispatchers.Main, block)
-}
-
-suspend fun ioThread(block: suspend CoroutineScope.() -> Unit) {
-    withContext(Dispatchers.IO, block)
-}
 
 infix fun <T> T.and(other: T) = listOf(this, other)
 infix fun <T> List<T>.and(other: T) = this.toMutableList().also { it.add(other) }
