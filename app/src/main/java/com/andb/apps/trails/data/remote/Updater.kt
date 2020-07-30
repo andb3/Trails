@@ -5,18 +5,20 @@ import com.andb.apps.trails.data.local.AreasDao
 import com.andb.apps.trails.data.local.MapsDao
 import com.andb.apps.trails.data.local.Prefs
 import com.andb.apps.trails.data.local.RegionsDao
-import com.andb.apps.trails.util.InitialLiveData
 import jonathanfinerty.once.Once
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
+@OptIn(ExperimentalCoroutinesApi::class)
 object Updater : KoinComponent {
 
-    val loadingRegions = InitialLiveData(false)
-    val loadingAreas = InitialLiveData(false)
-    val loadingMaps = InitialLiveData(false)
+    val loadingRegions = MutableStateFlow(false)
+    val loadingAreas = MutableStateFlow(false)
+    val loadingMaps = MutableStateFlow(false)
 
     private val regionsDao: RegionsDao by inject()
     private val areasDao: AreasDao by inject()
@@ -36,7 +38,7 @@ object Updater : KoinComponent {
      * @return Boolean indicating whether loading was successful
      **/
     suspend fun updateRegions(): Boolean {
-        loadingRegions.postValue(true)
+        loadingRegions.value = true
         var loaded = false
 
         try {
@@ -53,7 +55,7 @@ object Updater : KoinComponent {
             e.printStackTrace()
         }
 
-        loadingRegions.postValue(false)
+        loadingRegions.value = false
         return loaded
     }
 
@@ -62,7 +64,7 @@ object Updater : KoinComponent {
      * @return Boolean indicating whether loading was successful
      **/
     suspend fun updateAreas(): Boolean {
-        loadingAreas.postValue(true)
+        loadingAreas.value = true
         var loaded = false
         try {
             Log.d("updateAreas", "getting since ${Prefs.lastAreasUpdate}")
@@ -83,7 +85,7 @@ object Updater : KoinComponent {
             e.printStackTrace()
         }
 
-        loadingAreas.postValue(false)
+        loadingAreas.value = false
         return loaded
     }
 
@@ -92,7 +94,7 @@ object Updater : KoinComponent {
      * @return Boolean indicating whether loading was successful
      **/
     suspend fun updateMaps(): Boolean {
-        loadingMaps.postValue(true)
+        loadingMaps.value = true
         var loaded = false
         try {
             Log.d("updateMaps", "getting since ${Prefs.lastMapsUpdate}")
@@ -112,7 +114,7 @@ object Updater : KoinComponent {
             e.printStackTrace()
         }
 
-        loadingMaps.postValue(false)
+        loadingMaps.value = false
         return loaded
     }
 }

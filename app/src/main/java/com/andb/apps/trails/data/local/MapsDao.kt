@@ -1,8 +1,8 @@
 package com.andb.apps.trails.data.local
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.andb.apps.trails.data.model.SkiMap
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MapsDao{
@@ -26,13 +26,13 @@ interface MapsDao{
     fun getMapByID(id: Int): SkiMap?
 
     @Query("SELECT * FROM SkiMap")
-    fun getAll(): LiveData<List<SkiMap>>
+    fun getAll(): Flow<List<SkiMap>>
 
     @Query("SELECT * FROM SkiMap WHERE map_parent = :parentID")
-    fun getMapsFromParent(parentID: Int): LiveData<List<SkiMap>>
+    fun getMapsFromParent(parentID: Int): Flow<List<SkiMap>>
 
     @Query("SELECT * FROM SkiMap WHERE map_favorite = 1")
-    fun getFavorites(): LiveData<List<SkiMap>>
+    fun getFavorites(): Flow<List<SkiMap>>
 
     @Query("SELECT * FROM SkiMap")
     fun getAllStatic(): List<SkiMap>

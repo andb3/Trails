@@ -38,8 +38,8 @@ class ExploreViewModel(val regionsRepo: RegionsRepository, val areasRepo: AreasR
 
         init {
             this.value = false
-            addSource(Updater.loadingRegions) { loadingRegions = it; refresh() }
-            addSource(Updater.loadingAreas) { loadingAreas = it; refresh() }
+            addSource(Updater.loadingRegions.asLiveData()) { loadingRegions = it; refresh() }
+            addSource(Updater.loadingAreas.asLiveData()) { loadingAreas = it; refresh() }
         }
 
         fun refresh() {

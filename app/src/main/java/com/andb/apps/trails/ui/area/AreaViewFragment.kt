@@ -20,7 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commit
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.andb.apps.trails.R
 import com.andb.apps.trails.data.model.SkiArea
@@ -39,7 +39,10 @@ import jonathanfinerty.once.Once
 import kotlinx.android.synthetic.main.area_layout.*
 import kotlinx.android.synthetic.main.empty_item.view.*
 import kotlinx.android.synthetic.main.offline_item.view.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 
 
 class AreaViewFragment : Fragment() {
@@ -49,8 +52,7 @@ class AreaViewFragment : Fragment() {
     private var maps = listOf<SkiMap>()
     private var areaKey = -1
 
-    private val viewModel: AreaViewModel by viewModel()
-
+    private val viewModel: AreaViewModel by viewModel { parametersOf(requireArguments().getInt("areaKey")) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,16 +82,20 @@ class AreaViewFragment : Fragment() {
         setupOffline()
         setupEmpty()
         mapListRecycler.adapter = mapAdapter
-        viewModel.skiArea.notNull().observe(viewLifecycleOwner, areaObserver)
-        viewModel.maps.observe(viewLifecycleOwner, mapsObserver)
-        viewModel.regions.observe(viewLifecycleOwner, regionsObserver)
-        viewModel.loading.observe(viewLifecycleOwner, loadingObserver)
-        viewModel.offline.observe(viewLifecycleOwner, offlineObserver)
-        viewModel.emptyState.observe(viewLifecycleOwner, emptyObserver)
-        viewModel.loadArea(areaKey)
+        lifecycleScope.launch {
+            viewModel.area.collect { updateArea(it) }
+            viewModel.maps.collect { updateMaps(it) }
+            viewModel.regions.collect { updateRegions(it) }
+
+            viewModel.loading.collect { areaLoadingIndicator.isVisible = it }
+            viewModel.offline.collect { areaOfflineItem.isVisible = it }
+            viewModel.emptyState.collect { areaEmptyItem.isVisible = it }
+        }
+        viewModel.checkUpdates()
     }
 
-    private val areaObserver = Observer<SkiArea> { newArea ->
+    fun updateArea(newArea: SkiArea) {
+        println("updating area = $newArea")
         this.skiArea = newArea
         areaViewName.text = newArea.name
         newArea.details?.apply {
@@ -100,7 +106,7 @@ class AreaViewFragment : Fragment() {
         }
     }
 
-    private val mapsObserver = Observer<List<SkiMap>> { newMaps ->
+    private fun updateMaps(newMaps: List<SkiMap>) {
         if (!newMaps.equalsUnordered(maps)) {
             this.maps = newMaps.sortedByDescending { it.year }
             areaLoadingIndicator.visibility = View.GONE
@@ -122,71 +128,9 @@ class AreaViewFragment : Fragment() {
         }
     }
 
-    private val regionsObserver = Observer<List<SkiRegion>> { regions ->
+    private fun updateRegions(regions: List<SkiRegion>) {
         val string = regions.joinToString { region -> region.name }
         areaViewRegions.text = String.format(getString(R.string.area_regions_text), string)
-    }
-
-    private val loadingObserver = Observer<Boolean> { loading ->
-        areaLoadingIndicator.isVisible = loading
-    }
-
-    private val offlineObserver = Observer<Boolean> { offline ->
-        areaOfflineItem.isVisible = offline
-    }
-
-    private val emptyObserver = Observer<Boolean> { empty ->
-        areaEmptyItem.isVisible = empty
-    }
-
-    private fun View.spotlight(): Spotlight {
-        val overlayView = layoutInflater.inflate(R.layout.area_view_tip_overlay, null)
-        overlayView.updatePadding(top = this.getRectOnScreen().bottom + 16.dp)
-        val target = Target.Builder()
-            .setAnchor(this)
-            .setShape(RoundedRectangle(height.toFloat(), width.toFloat(), 16.dp.toFloat()))
-            .setEffect(
-                RippleEffect(
-                    50f, 200f,
-                    ContextCompat.getColor(requireContext(), R.color.colorAccent)
-                )
-            )
-            .setOverlay(overlayView)
-            .build()
-
-        val root = FrameLayout(requireContext())
-        (rootView as ViewGroup).addView(root)
-
-        val spotlight = Spotlight.Builder(requireActivity())
-            .setTargets(target)
-            .setBackgroundColor(R.color.iconDeselectedColor)
-            .setDuration(200)
-            .setAnimation(DecelerateInterpolator(2f))
-            .setContainer(root)
-            .setOnSpotlightListener(object : OnSpotlightListener {
-                override fun onEnded() {
-                    root.visibility = View.GONE
-                }
-
-                override fun onStarted() {}
-            })
-            .build()
-
-        root.apply {
-            isClickable = true
-            setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_UP) {
-                    spotlight.finish()
-                    val targetRect = this@spotlight.getRectOnScreen()
-                    val clickingTarget = targetRect.contains(event.rawX.toInt(), event.rawY.toInt())
-                    if (clickingTarget) {
-                        this@spotlight.callOnClick()
-                    }
-                }
-                return@setOnTouchListener true
-            }
-        }
-        return spotlight
     }
 
     private fun setupFab() {
@@ -201,7 +145,6 @@ class AreaViewFragment : Fragment() {
                 toggleInfo(areaViewFab)
             }
         }
-
     }
 
     private fun isTranslated(): Boolean {
@@ -252,7 +195,7 @@ class AreaViewFragment : Fragment() {
 
     private fun setupOffline() {
         areaOfflineItem.offlineRefreshButton.setOnClickListener {
-            viewModel.loadArea(areaKey)
+            viewModel.checkUpdates()
         }
     }
 
@@ -294,6 +237,56 @@ class AreaViewFragment : Fragment() {
 
     companion object {
         const val BACKSTACK_TAG = "areaView"
+    }
+
+    private fun View.spotlight(): Spotlight {
+        val overlayView = layoutInflater.inflate(R.layout.area_view_tip_overlay, null)
+        overlayView.updatePadding(top = this.getRectOnScreen().bottom + 16.dp)
+        val target = Target.Builder()
+            .setAnchor(this)
+            .setShape(RoundedRectangle(height.toFloat(), width.toFloat(), 16.dp.toFloat()))
+            .setEffect(
+                RippleEffect(
+                    50f, 200f,
+                    ContextCompat.getColor(requireContext(), R.color.colorAccent)
+                )
+            )
+            .setOverlay(overlayView)
+            .build()
+
+        val root = FrameLayout(requireContext())
+        (rootView as ViewGroup).addView(root)
+
+        val spotlight = Spotlight.Builder(requireActivity())
+            .setTargets(target)
+            .setBackgroundColor(R.color.iconDeselectedColor)
+            .setDuration(200)
+            .setAnimation(DecelerateInterpolator(2f))
+            .setContainer(root)
+            .setOnSpotlightListener(object : OnSpotlightListener {
+                override fun onEnded() {
+                    root.visibility = View.GONE
+                }
+
+                override fun onStarted() {}
+            })
+            .build()
+
+        root.apply {
+            isClickable = true
+            setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    spotlight.finish()
+                    val targetRect = this@spotlight.getRectOnScreen()
+                    val clickingTarget = targetRect.contains(event.rawX.toInt(), event.rawY.toInt())
+                    if (clickingTarget) {
+                        this@spotlight.callOnClick()
+                    }
+                }
+                return@setOnTouchListener true
+            }
+        }
+        return spotlight
     }
 }
 

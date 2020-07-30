@@ -1,6 +1,7 @@
 package com.andb.apps.trails.ui.favorites
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.andb.apps.trails.data.model.SkiArea
@@ -11,7 +12,8 @@ import com.andb.apps.trails.util.newIoThread
 
 class FavoritesViewModel(val areasRepo: AreasRepository, val mapsRepo: MapsRepository) :
     ViewModel() {
-    val maps = mapsRepo.getFavorites().map { mapList -> mapList.sortedBy { it.favorite } }
+    val maps =
+        mapsRepo.getFavorites().asLiveData().map { mapList -> mapList.sortedBy { it.favorite } }
     val areas = areasRepo.getFavorites().map { areaList -> areaList.sortedBy { it.favorite } }
     val empty = maps.switchMap { maps -> areas.map { areas -> maps.isEmpty() && areas.isEmpty() } }
 
